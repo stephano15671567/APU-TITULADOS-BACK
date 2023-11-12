@@ -1,8 +1,16 @@
 const express = require('express');
 const passport = require('passport');
 const router = express.Router();
-
 router.get('/auth/google', passport.authenticate('google', {
+  scope: ['profile', 'email']
+}));
+
+router.get('/auth/google/redirect', passport.authenticate('google'), (req, res) => {
+  // El usuario está autenticado y puedes hacer algo con el req.user
+  res.redirect('/dashboard');
+});
+
+/*router.get('/auth/google', passport.authenticate('google', {
   scope: ['profile', 'email']
 }));
 
@@ -16,6 +24,6 @@ router.get('/auth/google/redirect', passport.authenticate('google'), (req, res) 
 });
 
 // ... (cualquier otra ruta que necesites)
-
+*/
 module.exports = router;
 
