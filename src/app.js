@@ -5,18 +5,15 @@ import morgan from 'morgan';
 import passport from 'passport';
 import session from 'express-session';
 import value from './const/const.js';
-import db from './database/connection.js'; // Asegúrate de que este archivo exporte la conexión a la base de datos
+import db from './database/connection.js';
 import './config/passport-setup.js';
 
-// Rutas
 import authRoutes from './routes/auth-routes.js';
 import uploadRoutes from './routes/uploadRoutes.js';
-// Importar la ruta de titulados que vamos a crear
 import tituladosRoutes from './routes/tituladosRoutes.js';
 
 const app = express();
 
-// Opciones de CORS
 const corsOptions = {
   credentials: true,
   optionSuccessStatus: 200,
@@ -41,12 +38,10 @@ app.use(passport.session());
 
 app.use(express.static(path.join(path.resolve(), value.STATIC_PATH)));
 
-// Usar las rutas importadas
 app.use('/auth', authRoutes);
 app.use('/upload', uploadRoutes);
-app.use('/api', tituladosRoutes); // Esta es la nueva línea para las rutas de los titulados
+app.use('/api/titulados', tituladosRoutes);
 
-// Manejo de errores básico
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).send('Something broke!');

@@ -2,22 +2,6 @@ import express from 'express';
 import passport from 'passport';
 
 const router = express.Router();
-
-router.get('/google', passport.authenticate('google', {
-  scope: ['profile', 'email']
-}));
-
-router.get('/google/redirect', passport.authenticate('google'), (req, res) => {
-  // Suponiendo que quieres redirigir a una página específica en React después de la autenticación
-  res.redirect('http://localhost:3000/TituladosHome');
-});
-
-export default router;
-
-
-
-
-/*const router = express.Router();
 router.post('/upload', (req, res) => {
   upload(req, res, async (err) => {
     if (err) {
@@ -48,4 +32,3 @@ router.get('/google/redirect', passport.authenticate('google'), (req, res) => {
 });
 
 export default router;
-*/
