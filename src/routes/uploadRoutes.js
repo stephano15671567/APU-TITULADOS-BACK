@@ -1,52 +1,37 @@
 import express from 'express';
-import multer from 'multer';
-import db from '../database/connection.js'; // Asegúrate de que la ruta sea correcta
+import XLSX from 'xlsx';
+import db from '../database/connection.js';
+
 
 const router = express.Router();
-const upload = multer({ dest: 'uploads/' });
 
-router.post('/uploadTesis', upload.single('tesis'), async (req, res) => {
-  try {
-    const { file } = req;
-    if (!file) {
-      return res.status(400).send('No se subió ningún archivo');
+router.post('/upload', (req, res) => {
+    if (!req.files || Object.keys(req.files).length === 0) {
+        return res.status(400).send('No se subió ningún archivo.');
     }
 
-    const userId = req.user.id;
+    // Procesamiento del archivo Excel
+    let uploadedFile = req.files.myFile;
+    const workbook = XLSX.read(uploadedFile.data, { type: 'buffer' });
+    const sheetName = workbook.SheetNames[0];
+    const worksheet = workbook.Sheets[sheetName];
+    const data = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
 
-    await db.query('INSERT INTO tesis (nombre, ruta, usuario_google_id) VALUES (?, ?, ?)', [
-      file.originalname,
-      file.path,
-      userId,
-    ]);
+    // Omitir la cabecera si es necesario (por ejemplo, si tu Excel tiene encabezados)
+    // data.shift();
 
-    res.send('Archivo subido con éxito');
-  } catch (error) {
-    console.error('Error al subir archivo:', error);
-    res.status(500).send('Error interno del servidor');
-  }
-});
+    // Preparar la consulta SQL
+    let placeholders = data.map(row => '(' + row.map(() => '?').join(',') + ')').join(',');
+    let flatValues = data.reduce((acc, row) => [...acc, ...row], []);
 
-router.post('/uploadFicha', upload.single('ficha'), async (req, res) => {
-  try {
-    const { file } = req;
-    if (!file) {
-      return res.status(400).send('No se subió ningún archivo');
-    }
-
-    const userId = req.user.id;
-
-    await db.query('INSERT INTO fichas_inscripcion (nombre, ruta, usuario_google_id) VALUES (?, ?, ?)', [
-      file.originalname,
-      file.path,
-      userId,
-    ]);
-
-    res.send('Archivo subido con éxito');
-  } catch (error) {
-    console.error('Error al subir archivo:', error);
-    res.status(500).send('Error interno del servidor');
-  }
+    const query = `INSERT INTO titulados (alumno, rut, codigo, ano_ingreso, ano_egreso, num_resolucion, fecha_examen, hora, mail, guia, profesor_guia, presidente, secretario, tesis) VALUES ${placeholders}`;
+    connection.query(query, flatValues, (error, results) => {
+        if (error) {
+            console.error(error);
+            return res.status(500).send('Error al procesar los datos');
+        }
+        res.send({ message: 'Datos cargados exitosamente', insertedRows: results.affectedRows });
+    });
 });
 
 export default router;
