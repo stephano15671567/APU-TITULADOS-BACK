@@ -9,11 +9,10 @@ router.post('/upload', (req, res) => {
     }
 
     try {
-      const userId = req.user.id; // Asegúrate de que el usuario esté autenticado y tenga una 'id'
+      const userId = req.user.id; 
       const filePath = req.file.path;
 
-      // Aquí deberías actualizar la base de datos con la información del archivo
-      // Por ejemplo, podrías guardar la ruta del archivo en la tabla 'tesis'
+      
       await db.query('INSERT INTO tesis (id_usuario_google, ruta_archivo) VALUES (?, ?)', [userId, filePath]);
 
       res.status(200).send('Archivo subido con éxito');
@@ -28,7 +27,7 @@ router.get('/google', passport.authenticate('google', {
 }));
 
 router.get('/google/redirect', passport.authenticate('google'), (req, res) => {
-  res.redirect('http://localhost:3000/TituladosHome'); // Actualiza con la ruta correcta de tu frontend
+  res.redirect('http://localhost:3000/TituladosHome'); 
 });
 
 export default router;

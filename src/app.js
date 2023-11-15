@@ -4,9 +4,9 @@ import cors from 'cors';
 import morgan from 'morgan';
 import passport from 'passport';
 import session from 'express-session';
-import fileUpload from 'express-fileupload'; // Importar una sola vez
+import fileUpload from 'express-fileupload'; 
 import value from './const/const.js';
-// import db from './database/connection.js'; // Esta línea puede ser innecesaria si no usas 'db' aquí.
+
 
 import './config/passport-setup.js';
 import authRoutes from './routes/auth-routes.js';
@@ -21,7 +21,7 @@ const corsOptions = {
   credentials: true,
   optionSuccessStatus: 200,
   methods: 'GET, PUT, POST, DELETE',
-  origin: 'http://localhost:3000', // Asegúrate de que esta es la URL de tu frontend
+  origin: 'http://localhost:3000', 
 };
 
 app.set('env', value.NODE_ENV);
@@ -39,7 +39,7 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Debes usar fileUpload antes de las rutas que necesitan procesar archivos subidos
+
 app.use(fileUpload());
 
 // Convertir __dirname a ES6 Module
@@ -49,7 +49,7 @@ const __dirname = dirname(__filename);
 app.use(express.static(path.join(__dirname, value.STATIC_PATH)));
 
 app.use('/auth', authRoutes);
-app.use('/upload', uploadRoutes); // Asegúrate de que este es el endpoint correcto.
+app.use('/upload', uploadRoutes);
 app.use('/api/titulados', tituladosRoutes);
 
 // Manejo de errores generales
