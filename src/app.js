@@ -40,8 +40,11 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 
-app.use(fileUpload());
-
+app.use(fileUpload({
+  limits: { fileSize: 50 * 1024 * 1024 },
+  abortOnLimit:true,
+  responseOnLimit: "El archivo es demasiado grande",
+}));
 // Convertir __dirname a ES6 Module
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
