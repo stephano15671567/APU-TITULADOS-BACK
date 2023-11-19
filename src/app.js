@@ -11,10 +11,11 @@ import value from './const/const.js';
 import './config/passport-setup.js';
 import authRoutes from './routes/auth-routes.js';
 import uploadRoutes from './routes/uploadRoutes.js';
-import tituladosRoutes from './routes/tituladosRoutes.js';
+
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
-
+import tituladosRoutes from './routes/tituladosRoutes.js';
+import profesoresRoutes from './routes/profesoresRoutes.js';
 const app = express();
 
 const corsOptions = {
@@ -54,11 +55,16 @@ app.use(express.static(path.join(__dirname, value.STATIC_PATH)));
 app.use('/auth', authRoutes);
 app.use('/upload', uploadRoutes);
 app.use('/api/titulados', tituladosRoutes);
+app.use('/api/profesores', profesoresRoutes);
 
 // Manejo de errores generales
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).send('Something broke!');
 });
+
+
+
+
 
 export default app;

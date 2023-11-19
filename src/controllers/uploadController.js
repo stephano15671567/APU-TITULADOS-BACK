@@ -1,7 +1,6 @@
 import XLSX from "xlsx";
 import mysql2 from "mysql2/promise";
 import db from "../database/connection.js";
-import e from "express";
 
 const createConnection = async () => {
   return await mysql2.createConnection(db);
@@ -9,28 +8,36 @@ const createConnection = async () => {
 
 const uploadFile = async (req, res) => {
   try {
+    // Crear la conexión con la base de datos
     const connection = await createConnection();
 
+    // Verificar si se ha subido un archivo
     if (!req.files || Object.keys(req.files).length === 0) {
-      res.status(400).send("No files were uploaded.");
-      return;
+      return res.status(400).send("No files were uploaded.");
     }
 
     let file = req.files.archivo;
     let path = "./src/public/" + file.name;
-    file.mv(path, function (err) {
-      if (err) return res.status(500).send(err);
+
+    // Mover el archivo subido al directorio deseado
+    await new Promise((resolve, reject) => {
+      file.mv(path, (err) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve();
+        }
+      });
     });
 
-    let workbook = XLSX.readFile(path);
-    const data = XLSX.utils.sheet_to_json(
-      workbook.Sheets[workbook.SheetNames[0]]
-    );
-    const insertQuery =
-      "INSERT INTO alumnos_titulados (`id`, `alumno`, `rut`, `codigo`, `ano_ingreso`, `ano_egreso`, `num_resolucion`, `fecha_examen`, `hora`, `mail`, `guia`, `profesor_guia`, `presidente`, `secretario`, `tesis`, `guia_nota`, `informante_nota`, `promedio_nota_tesis`, `examen_oral_nota`, `seminario_titulo_nota`, `nota_final_egreso`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);";
-    console.log(data);
-    data.forEach(async (elemento, index) => {
-      let elemento_exacto = [
+    // Leer y procesar el archivo Excel
+    const workbook = XLSX.readFile(path);
+    const data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+
+    // Preparar y ejecutar las consultas de inserción para cada fila
+    const insertQuery = "INSERT INTO alumnos_titulados (id, alumno, rut, codigo, ano_ingreso, ano_egreso, num_resolucion, fecha_examen, hora, mail, guia, profesor_guia, presidente, secretario, tesis, guia_nota, informante_nota, promedio_nota_tesis, examen_oral_nota, seminario_titulo_nota, nota_final_egreso) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);";
+    const insertPromises = data.map((elemento, index) => {
+      const elemento_exacto = [
         index + 1,
         elemento["Alumno"] || null,
         elemento["RUT"] || null,
@@ -54,12 +61,22 @@ const uploadFile = async (req, res) => {
         elemento["N.FINAL (SEMINARIO DE TITULO)"] || null,
       ];
       
-      await connection.execute(insertQuery, elemento_exacto);
+      return connection.execute(insertQuery, elemento_exacto);
     });
+
+    // Esperar a que todas las inserciones se completen
+    await Promise.all(insertPromises);
+
+    // Enviar la respuesta de éxito
+    res.status(200).send("File uploaded successfully!");
   } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: error.message });
+    console.error(error);
+
+    // Enviar la respuesta de error solo si no se ha enviado una respuesta previamente
+    if (!res.headersSent) {
+      res.status(500).json({ message: error.message });
+    }
   }
-  res.status(200).send("File uploaded!");
 };
+
 export { uploadFile };

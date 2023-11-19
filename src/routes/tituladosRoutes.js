@@ -5,4 +5,5 @@ const router = express.Router();
 
 router.get('/alumnosTitulados', getTitulados);
 
+
 export default router;

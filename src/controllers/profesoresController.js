@@ -1,31 +1,36 @@
+import db from '../database/connection.js';
+import mysql2 from "mysql2/promise";
 
-const db = require('../database/connection.js');
+// Create a new connection using MySQL 2
+const createConnection = async () => {
+  return await mysql2.createConnection(db);
+};
 
-// Get all 'profesores_guias'
-exports.getProfesoresGuias = async (req, res) => {
+export const getProfesoresGuias = async (req, res) => {
     try {
-        const profesoresGuias = await db.query('SELECT * FROM profesores_guias');
-        res.json(profesoresGuias);
+        const connection = await createConnection();
+        const [rows] = await connection.query('SELECT id, nombre FROM guias');
+        res.json(rows);
     } catch (error) {
-        res.status(500).send('Server error');
+        res.status(500).send(error.message);
     }
 };
 
-// Get all 'profesores_informantes'
-exports.getProfesoresInformantes = async (req, res) => {
+export const getProfesoresInformantes = async (req, res) => {
     try {
-        const profesoresInformantes = await db.query('SELECT * FROM informantes');
-        res.json(profesoresInformantes);
+        const connection = await createConnection();
+        const [rows] = await connection.query('SELECT id, nombre FROM informantes');
+        res.json(rows);
     } catch (error) {
-        res.status(500).send('Server error');
+        res.status(500).send(error.message);
     }
 };
 
-// Update the assigned 'profesor_guia' and 'profesor_informante' for a 'titulado'
-exports.updateProfesorAsignado = async (req, res) => {
+export const updateProfesorAsignado = async (req, res) => {
     const { tituladoId, profesorGuiaId, profesorInformanteId } = req.body;
     try {
-        await db.query('UPDATE alumnos_titulados SET profesor_guia = ?, profesor_informante = ? WHERE id = ?', 
+        const connection = await createConnection();
+        await connection.query('UPDATE alumnos_titulados SET guias = ?, informantes = ? WHERE id = ?', 
         [profesorGuiaId, profesorInformanteId, tituladoId]);
         res.json({ success: true });
     } catch (error) {
