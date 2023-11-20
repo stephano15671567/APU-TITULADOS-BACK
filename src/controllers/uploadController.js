@@ -35,7 +35,7 @@ const uploadFile = async (req, res) => {
     const data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
 
     // Preparar y ejecutar las consultas de inserción para cada fila
-    const insertQuery = "INSERT INTO alumnos_titulados (id, alumno, rut, codigo, ano_ingreso, ano_egreso, num_resolucion, fecha_examen, hora, mail, guia, profesor_guia, presidente, secretario, tesis, guia_nota, informante_nota, promedio_nota_tesis, examen_oral_nota, seminario_titulo_nota, nota_final_egreso) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);";
+    const insertQuery = "INSERT INTO alumnos_titulados (id, alumno, rut, codigo, ano_ingreso, ano_egreso, num_resolucion, fecha_examen, hora, mail, guia, profesor_guia, informante, secretario, tesis, guia_nota, informante_nota, promedio_nota_tesis, examen_oral_nota, seminario_titulo_nota, nota_final_egreso) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);";
     const insertPromises = data.map((elemento, index) => {
       const elemento_exacto = [
         index + 1,
