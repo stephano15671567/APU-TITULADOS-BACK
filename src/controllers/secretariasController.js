@@ -15,23 +15,25 @@ export const login = async (req, res) => {
       const connection = await createConnection();
       const [rows] = await connection.query('SELECT * FROM secretarias WHERE correo = ?', [correo]);
       const secretaria = rows[0];
-      
       if (!secretaria) {
         return res.status(401).json({ message: 'Credenciales incorrectas' });
       }
-    
+      
+
       const contraseñaValida = await bcrypt.compare(contraseña, secretaria.contraseña);
+      //$2a$05$IMA9FyZvbZX66MkJG9CfS.5ZOP1t4z9qU6h2hwGq2pUdYKuq2HKeC
       if (!contraseñaValida) {
         return res.status(401).json({ message: 'Credenciales incorrectas' });
       }
     
       // If password is valid, generate a token
-      const token = jwt.sign({ id: secretaria.id }, process.env.JWT_SECRET, {
+      const token = jwt.sign({ id: secretaria.id }, process.env.SECRET, {
         expiresIn: '1h'
       });
     
-      res.json({ message: 'Inicio de sesión exitoso', token });
+      return res.json({ message: 'Inicio de sesión exitoso', token });
     } catch (error) {
+      console.log(error)
       res.status(500).json({ message: 'Error en el servidor', error: error.message });
     }
   };

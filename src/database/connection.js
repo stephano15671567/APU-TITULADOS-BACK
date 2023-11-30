@@ -6,7 +6,7 @@ database. It includes the following properties: */
 const connectionConfig = {
   host: values.HOST,
   user: values.USER,
-  password: "",
+  password: "1914",
   database: values.DATABASE,
 };
 /* The code is creating a connection to a MySQL database using the `mysql2` library. */
