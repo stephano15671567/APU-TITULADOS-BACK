@@ -16,6 +16,7 @@ import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import tituladosRoutes from './routes/tituladosRoutes.js';
 import profesoresRoutes from './routes/profesoresRoutes.js';
+import secretariasRoutes from './routes/secretariasRoutes.js';
 const app = express();
 
 const corsOptions = {
@@ -56,12 +57,13 @@ app.use('/auth', authRoutes);
 app.use('/upload', uploadRoutes);
 app.use('/api/titulados', tituladosRoutes);
 app.use('/api/profesores', profesoresRoutes);
-
+app.use('/api/secretarias', secretariasRoutes);
 // Manejo de errores generales
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).send('Something broke!');
 });
+
 
 
 
