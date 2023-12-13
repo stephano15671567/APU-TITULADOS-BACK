@@ -14,5 +14,22 @@ export const getTitulados = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+export const updateNota = async (req, res) => {
+  const { id, nota } = req.body;
+
+  // Validar la nota
+  if (nota < 1 || nota > 7) {
+      return res.status(400).send({ message: 'Nota inválida.' });
+  }
+
+  try {
+      const connection = await createConnection();
+      await connection.query('UPDATE alumnos_titulados SET nota = ? WHERE id = ?', [nota, id]);
+      res.send({ message: 'Nota actualizada correctamente.' });
+  } catch (error) {
+      res.status(500).send({ message: 'Error al actualizar la nota.', error: error.message });
+  }
+};
+
 
 
