@@ -18,6 +18,7 @@ import tituladosRoutes from './routes/tituladosRoutes.js';
 import profesoresRoutes from './routes/profesoresRoutes.js';
 import secretariasRoutes from './routes/secretariasRoutes.js';
 import jefaturaRoutes from './routes/jefaturaRoutes.js';
+import profesorloginRoutes from './routes/loginprofesorRoutes.js'
 const app = express();
 
 const corsOptions = {
@@ -60,6 +61,7 @@ app.use('/api/titulados', tituladosRoutes);
 app.use('/api/profesores', profesoresRoutes);
 app.use('/api/secretarias', secretariasRoutes);
 app.use('/api/jefatura', jefaturaRoutes)
+app.use('/api/login/profesores', profesorloginRoutes)
 // Manejo de errores generales
 app.use((err, req, res, next) => {
   console.error(err.stack);
