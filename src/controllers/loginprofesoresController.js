@@ -44,3 +44,25 @@ export const login = async (req, res) => {
   }
 };
 
+export const asignarNotaGuia = async (req, res) => {
+  const { idAlumno, nota } = req.body;
+  const idGuia = req.user.id; // Asumiendo que el ID del guía está en la sesión del usuario
+
+  try {
+    const connection = await createConnection();
+    const [result] = await connection.execute(
+        'UPDATE alumnos_titulados SET guia_nota = ? WHERE id = ? AND guia_id = ?',
+        [nota, idAlumno, idGuia]
+    );
+
+    if (result.affectedRows > 0) {
+      res.status(200).json({ message: 'Nota del guía actualizada con éxito' });
+    } else {
+      res.status(404).json({ message: 'Alumno no encontrado o guía no coincide' });
+    }
+  } catch (error) {
+    console.error('Error al asignar nota del guía:', error);
+    res.status(500).json({ message: 'Error interno del servidor' });
+  }
+};
+  

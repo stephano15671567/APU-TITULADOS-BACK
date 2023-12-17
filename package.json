@@ -32,6 +32,7 @@
     "mysql2": "^3.6.2",
     "passport": "^0.6.0",
     "passport-google-oauth20": "^2.0.0",
+    "passport-jwt": "^4.0.1",
     "react-router-dom": "^6.18.0",
     "uuid": "^9.0.1",
     "xlsx": "^0.18.5"

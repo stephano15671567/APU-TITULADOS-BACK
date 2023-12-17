@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import express from 'express';
 import path from 'path';
 import cors from 'cors';
@@ -6,7 +7,7 @@ import passport from 'passport';
 import session from 'express-session';
 import fileUpload from 'express-fileupload'; 
 import value from './const/const.js';
-
+import './config/passport-setup-1.js';
 
 import './config/passport-setup.js';
 import authRoutes from './routes/auth-routes.js';
@@ -19,6 +20,8 @@ import profesoresRoutes from './routes/profesoresRoutes.js';
 import secretariasRoutes from './routes/secretariasRoutes.js';
 import jefaturaRoutes from './routes/jefaturaRoutes.js';
 import profesorloginRoutes from './routes/loginprofesorRoutes.js'
+import passport1 from 'passport';
+
 const app = express();
 
 const corsOptions = {
@@ -42,6 +45,10 @@ app.use(session({
 }));
 app.use(passport.initialize());
 app.use(passport.session());
+
+
+app.use(passport1.initialize());
+app.use(passport1.session());
 
 
 app.use(fileUpload({
