@@ -1,13 +1,18 @@
 import express from 'express';
-import { getAlumnosTituladosWithDetails, getProfesoresGuias, getProfesoresInformantes, updateProfesorAsignado } from '../controllers/profesoresController.js';
+import {
+  getProfesores,
+  getProfesor,
+  createProfesor,
+  updateProfesor,
+  deleteProfesor
+} from '../controllers/profesoresController.js';
 
 const router = express.Router();
 
-// Add the new route for getting 'alumnos_titulados' with guide and informant names
-router.get('/titulados/detailed', getAlumnosTituladosWithDetails);
-
-router.get('/guias', getProfesoresGuias);
-router.get('/informantes', getProfesoresInformantes);
-router.post('/asignacion', updateProfesorAsignado);
+router.get('/', getProfesores);
+router.get('/:id', getProfesor);
+router.post('/', createProfesor);
+router.put('/:id', updateProfesor);
+router.delete('/:id', deleteProfesor);
 
 export default router;

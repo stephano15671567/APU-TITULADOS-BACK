@@ -1,26 +1,16 @@
 import 'dotenv/config';
 import express from 'express';
-import path from 'path';
 import cors from 'cors';
 import morgan from 'morgan';
-import passport from 'passport';
 import session from 'express-session';
-import fileUpload from 'express-fileupload'; 
 import value from './const/const.js';
-import './config/passport-setup-1.js';
-
-import './config/passport-setup.js';
-import authRoutes from './routes/auth-routes.js';
 import uploadRoutes from './routes/uploadRoutes.js';
 
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
-import tituladosRoutes from './routes/tituladosRoutes.js';
 import profesoresRoutes from './routes/profesoresRoutes.js';
-import secretariasRoutes from './routes/secretariasRoutes.js';
-import jefaturaRoutes from './routes/jefaturaRoutes.js';
-import profesorloginRoutes from './routes/loginprofesorRoutes.js'
-import passport1 from 'passport';
+import alumnosRoutes from './routes/alumnosRoutes.js';
+
+
+
 
 const app = express();
 
@@ -43,41 +33,11 @@ app.use(session({
   resave: false,
   saveUninitialized: false
 }));
-app.use(passport.initialize());
-app.use(passport.session());
-
-
-app.use(passport1.initialize());
-app.use(passport1.session());
-
-
-app.use(fileUpload({
-  limits: { fileSize: 50 * 1024 * 1024 },
-  abortOnLimit:true,
-  responseOnLimit: "El archivo es demasiado grande",
-}));
-// Convertir __dirname a ES6 Module
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-app.use(express.static(path.join(__dirname, value.STATIC_PATH)));
-
-app.use('/auth', authRoutes);
+//endpoints
 app.use('/upload', uploadRoutes);
-app.use('/api/titulados', tituladosRoutes);
+
 app.use('/api/profesores', profesoresRoutes);
-app.use('/api/secretarias', secretariasRoutes);
-app.use('/api/jefatura', jefaturaRoutes)
-app.use('/api/login/profesores', profesorloginRoutes)
-// Manejo de errores generales
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).send('Something broke!');
-});
 
-
-
-
-
+app.use('/api/alumnos', alumnosRoutes);
 
 export default app;
