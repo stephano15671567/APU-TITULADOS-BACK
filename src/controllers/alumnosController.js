@@ -33,7 +33,6 @@ export const getAllAlumnos = async (req, res) => {
     }
   };
 
-
 // Actualizar un alumno
 export const updateAlumno = async (req, res) => {
     const { RUT } = req.params;
