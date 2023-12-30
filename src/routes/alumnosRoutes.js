@@ -1,8 +1,8 @@
 import express from 'express';
-import { createAlumno, getAllAlumnos, updateAlumno, deleteAlumno, authAlumno } from '../controllers/alumnosController.js';
+import { createAlumno, getAllAlumnos, updateAlumno, deleteAlumno, authAlumno, verifyToken } from '../controllers/alumnosController.js';
 
 const router = express.Router();
-
+router.post('/ver', verifyToken);
 router.post('/auth', authAlumno);
 router.post('/', createAlumno);
 router.get('/', getAllAlumnos);
