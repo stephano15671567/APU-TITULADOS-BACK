@@ -14,7 +14,7 @@ export const verifyToken = async (req, res) => {
     const token = req.headers.authorization.split(" ")[1];
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     if (decoded.rol === "alumno"){
-      return res.status(200).json({message: "Token verificado", token: req.headers.authorization.split(" ")[1]})
+      return res.status(200).json({status: true, rol: "alumno",message: "Token verificado", token: req.headers.authorization.split(" ")[1]})
     }
     return res.status(401).json({message: "Token vencido o inválido"})
   }catch(e){
