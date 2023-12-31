@@ -67,17 +67,14 @@ export const updateProfesor = async (req, res) => {
 
 //eliminar profesor
 export const deleteProfesor = async (req, res) => {
-  const connection = await createConnection();
   const { id } = req.params;
   try {
-    await connection.query('DELETE FROM profesores WHERE profesor_id = ?', [id]);
+    const connection = await createConnection();
+    await connection.execute('DELETE FROM profesores WHERE profesor_id = ?', [id]);
+    await connection.end();
     res.send('Profesor deleted successfully');
   } catch (error) {
-    console.error('Error deleting profesor:', error);
-    res.status(500).send('Server error');
-  } finally {
-    await connection.end();
-  }
+        res.status(500).send('Server error');
+  } 
 };
-
 
