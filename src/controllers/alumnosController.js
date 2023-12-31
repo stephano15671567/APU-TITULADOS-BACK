@@ -167,6 +167,7 @@ export const updateAlumno = async (req, res) => {
     await connection.end();
     res.json({ message: "Alumno actualizado" });
   } catch (error) {
+    console.log(error)
     res.status(500).json({ message: error.message });
   }
 };
