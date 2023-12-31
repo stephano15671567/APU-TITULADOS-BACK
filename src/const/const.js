@@ -7,11 +7,11 @@ const RUN_PORT = process.env.RUN_PORT;
 const NODE_ENV = process.env.NODE_ENV;
 const STATIC_PATH = process.env.STATIC_PATH;
 
-
 // BD
 const HOST = process.env.HOST;
 const USER = process.env.USER;
 const DATABASE = process.env.DATABASE;
+const PASSWORD = process.env.PASSWORD;
 
 /* The code is creating an object called `object` and assigning it the values of the constants
 `SECRET`, `NODE_ENV`, `RUN_PORT`, and `STATIC_PATH`. These constants are obtained from environment
@@ -24,6 +24,7 @@ const object = {
     DATABASE,
     RUN_PORT,
     STATIC_PATH,
+    PASSWORD
 }
 
 Object.freeze(object) //The Object.freeze() static method freezes an object
