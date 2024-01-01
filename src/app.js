@@ -15,7 +15,7 @@ const corsOptions = {
   credentials: true,
   optionSuccessStatus: 200,
   methods: 'GET, PUT, POST, DELETE',
-  origin: 'https://titulados.administracionpublica-uv.cl/', 
+  origin: 'https://titulados.administracionpublica-uv.cl', 
 };
 
 app.set('env', value.NODE_ENV);
