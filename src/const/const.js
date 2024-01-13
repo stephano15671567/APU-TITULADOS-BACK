@@ -10,7 +10,7 @@ const STATIC_PATH = process.env.STATIC_PATH;
 
 // BD
 const HOST = process.env.HOST;
-const USER = process.env.USER;
+const USER = process.env.DB_USER;
 const DATABASE = process.env.DATABASE;
 
 /* The code is creating an object called `object` and assigning it the values of the constants
