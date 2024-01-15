@@ -24,6 +24,7 @@ connection.query(
   (error) => {
     if (error) {
       console.error("Error al crear la base de datos: ", error);
+      console.log(connectionConfig)
       return;
     }
 
