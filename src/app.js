@@ -1,3 +1,4 @@
+
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
@@ -16,23 +17,27 @@ const app = express();
 const corsOptions = {
   credentials: true,
   optionSuccessStatus: 200,
-  methods: 'GET, PUT, POST, DELETE',
-  origin: 'http://localhost:3000', 
+  methods: "GET, PUT, POST, DELETE",
+  origin: [
+    "https://titulados.administracionpublica-uv.cl",
+    "http://localhost:3000",
+  ],
 };
 
-app.set('env', value.NODE_ENV);
-app.set('port', value.RUN_PORT);
+app.set("env", value.NODE_ENV);
+app.set("port", value.RUN_PORT);
 
-app.use(morgan('dev'));
+app.use(morgan("dev"));
 app.use(cors(corsOptions));
-app.use(express.json({ limit: '500MB' }));
+app.use(express.json({ limit: "500MB" }));
 app.use(express.urlencoded({ extended: true }));
-app.use(session({
-  secret: value.SECRET,
-  resave: false,
-  saveUninitialized: false
-}));
-
+app.use(
+  session({
+    secret: value.SECRET,
+    resave: false,
+    saveUninitialized: false,
+  })
+);
 
 //endpoints
 app.use('/upload', uploadRoutes);
@@ -40,4 +45,6 @@ app.use('/api/profesores', profesoresRoutes);
 app.use('/api/alumnos', alumnosRoutes);
 app.use('/api/asignaciones', asignacionesRoutes);
 app.use('/api/secretarias', secretariasRoutes);
+
+
 export default app;
