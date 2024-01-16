@@ -9,11 +9,22 @@ export const assignProfessorToStudent = async (req, res) => {
     const connection = await createConnection();
     const { alumnoId, profesorId, rol } = req.body;
     try {
+      //Ese alumno ya fue asignado a ese profesor
+      const [rev] = await connection.execute(
+        'SELECT * FROM asignaciones_profesores WHERE alumno_RUT = ? AND profesor_id = ? ',
+        [alumnoId, profesorId]
+      );
+      
+      console.log(rev)
+      if (rev[0]){
+        return res.status(409).json({ message: 'El alumno ya fue asignado a ese profesor.', data: rev});
+      }
       
       const [results] = await connection.execute(
         'INSERT INTO asignaciones_profesores (alumno_RUT, profesor_id, rol) VALUES (?, ?, ?)',
         [alumnoId, profesorId, rol]
       );
+
       res.status(201).json({ message: 'Asignación creada con éxito.', data: results });
     } catch (error) {
       if (connection) await connection.end();
