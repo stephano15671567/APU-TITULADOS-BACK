@@ -20,8 +20,8 @@ router.get('/:alumnoId', getAssignmentsByStudent);
 
 
 
-router.get('guia/:profesorId', getGuiaAssignmentsByProfessor);
-router.get('informante/:profesorId', getInformanteAssignmentsByProfessor);
+router.get('/guia/:profesorId', getGuiaAssignmentsByProfessor);
+router.get('/informante/:profesorId', getInformanteAssignmentsByProfessor);
 
 
 
