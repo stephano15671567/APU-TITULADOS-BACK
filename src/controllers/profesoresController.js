@@ -88,6 +88,11 @@ export const authAcademico = async (req, res) => {
       "SELECT mail FROM profesores WHERE mail = ?",
       [token_dec.email]
     );
+    let [id] = await connection.execute(
+      "SELECT profesor_id FROM profesores WHERE mail = ?",
+      [token_dec.email]
+    );
+    const {profesor_id} = id[0]
     if (user.length == 0) { //Situación donde no existe profesor dentro de la bd
       await connection.end();
       return res
@@ -105,14 +110,16 @@ export const authAcademico = async (req, res) => {
           .status(500) //Error de sv
           .json({ message: "Profesor no autenticado", status: false });
       }
-
+      
       await connection.end(); //Situación donde existe profesor dentro de la bdssss
       const payload = {
         status: true,
         rol: "profesor",
         email: token_dec.email,
+        id: profesor_id
       };
       
+      console.log(payload)
       const token_enc = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
 
       return res
@@ -129,13 +136,15 @@ export const authAcademico = async (req, res) => {
 
 export const verifyToken = async (req, res) => {
   try{
+    const connection = await createConnection();
     if (req.headers.authorization === null) {
       return res.status(401).json({status: false, message: "Token no válido"})
     }
     const token = req.headers.authorization.split(" ")[1];
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = jwt.decode(token);
     if (decoded.rol === "profesor"){
-      return res.status(200).json({status: true, rol: "profesor",message: "Token verificado", token: req.headers.authorization.split(" ")[1]})
+      return res.status(200).json({status: true, rol: "profesor",message: "Token verificado", id: user.id, token: req.headers.authorization.split(" ")[1]})
     }
     return res.status(401).json({message: "Token vencido o inválido"})
   }catch(e){
