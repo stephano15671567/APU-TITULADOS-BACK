@@ -88,13 +88,13 @@ export const authAcademico = async (req, res) => {
       "SELECT mail FROM profesores WHERE mail = ?",
       [token_dec.email]
     );
-    if (user.length == 0) { //Situación donde no existe alumno dentro de la bd
+    if (user.length == 0) { //Situación donde no existe profesor dentro de la bd
       await connection.end();
       return res
         .status(401)
         .json({ message: "Profesor no perteneciente", status: false });
     } else {
-      try { //Situación donde existe alumno dentro de la bd
+      try { //Situación donde existe profesor dentro de la bd
         await connection.execute(
           "UPDATE profesores SET Gtoken = ? WHERE mail = ? ",
           [token, token_dec.email]
@@ -106,7 +106,7 @@ export const authAcademico = async (req, res) => {
           .json({ message: "Profesor no autenticado", status: false });
       }
 
-      await connection.end(); //Situación donde existe alumno dentro de la bdssss
+      await connection.end(); //Situación donde existe profesor dentro de la bdssss
       const payload = {
         status: true,
         rol: "profesor",
@@ -143,3 +143,31 @@ export const verifyToken = async (req, res) => {
     return res.status(401).json({status: false, message: "Token no verificado"})
   }
 };
+
+
+
+
+/* Consultas a la base de datos
+const [asignacionesGuia] = await connection.query(
+  'SELECT a.nombre, a.RUT, a.mail FROM alumnos a ' +
+  'INNER JOIN asignaciones_profesores ap ON a.RUT = ap.alumno_RUT ' +
+  'WHERE ap.profesor_id = ? AND ap.rol = "Guia"', 
+  [profesorId]
+);
+
+const [asignacionesInformante] = await connection.query(
+  'SELECT a.nombre, a.RUT, a.mail FROM alumnos a ' +
+  'INNER JOIN asignaciones_profesores ap ON a.RUT = ap.alumno_RUT ' +
+  'WHERE ap.profesor_id = ? AND ap.rol = "Informante"',
+  [profesorId]
+);
+
+// Cerrar la conexión a la base de datos
+await connection.end();
+
+// Enviar los resultados como respuesta
+res.json({
+  guia: asignacionesGuia,
+  informante: asignacionesInformante
+});
+*/
