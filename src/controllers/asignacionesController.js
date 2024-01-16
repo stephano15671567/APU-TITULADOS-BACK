@@ -50,6 +50,53 @@ export const getAssignmentsByStudent = async (req, res) => {
         res.status(500).json({ message: 'Error al obtener las asignaciones.', error: error.message });
     }
 };
+export const getGuiaAssignmentsByProfessor = async (req, res) => {
+  const { profesorId } = req.params;
+  const connection = await createConnection();
+  try {
+      const [guiaAssignments] = await connection.query(
+          'SELECT * FROM asignaciones_profesores WHERE profesor_id = ? AND rol = "guia"',
+          [profesorId]
+      );
+      res.json(guiaAssignments);
+  } catch (error) {
+      res.status(500).json({ message: 'Error al obtener las asignaciones como guía.', error: error.message });
+  } finally {
+      if (connection) await connection.end();
+  }
+};
+
+export const getInformanteAssignmentsByProfessor = async (req, res) => {
+  const { profesorId } = req.params;
+  const connection = await createConnection();
+  try {
+      const [informanteAssignments] = await connection.query(
+          'SELECT * FROM asignaciones_profesores WHERE profesor_id = ? AND rol = "informante"',
+          [profesorId]
+      );
+      res.json(informanteAssignments);
+  } catch (error) {
+      res.status(500).json({ message: 'Error al obtener las asignaciones como informante.', error: error.message });
+  } finally {
+      if (connection) await connection.end();
+  }
+};
+
+export const getAllAssignments = async (req, res) => {
+  try {
+      const connection = await createConnection();
+      const [results] = await connection.query(
+          'SELECT * FROM asignaciones_profesores'
+      );
+      await connection.end();
+      res.status(200).json(results);
+  } catch (error) {
+      if (connection) await connection.end();
+      res.status(500).json({ message: 'Error al obtener las asignaciones.', error: error.message });
+  }
+}
+
+
 
 
 
