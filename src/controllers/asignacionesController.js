@@ -82,6 +82,22 @@ export const getInformanteAssignmentsByProfessor = async (req, res) => {
   }
 };
 
+export const getAllAssignments = async (req, res) => {
+  try {
+      const connection = await createConnection();
+      const [results] = await connection.query(
+          'SELECT * FROM asignaciones_profesores'
+      );
+      await connection.end();
+      res.status(200).json(results);
+  } catch (error) {
+      if (connection) await connection.end();
+      res.status(500).json({ message: 'Error al obtener las asignaciones.', error: error.message });
+  }
+}
+
+
+
 
 
 
