@@ -5,6 +5,39 @@ const createConnection = async () => {
   return await mysql2.createConnection(db);
 };
 
+export const modifyAssignment = async (req, res) => {
+  const { id } = req.params;
+  const { profesorId, rol, alumnoId } = req.body;
+  const connection = await createConnection();
+  console.log(req.body)
+  try {
+     const [rev] = await connection.execute(
+      "SELECT * FROM asignaciones_profesores WHERE alumno_RUT = ?",
+      [alumnoId]
+    );
+    for (const element of rev) {
+      if (element.profesor_id === profesorId && element.rol === rol) {
+        await connection.end();
+        return res.status(500).json({ message: "No se puede asignar a un mismo profesor" });
+      }
+    }
+    
+    const [results] = await connection.execute(
+      "UPDATE asignaciones_profesores SET profesor_id = ?, rol = ? WHERE asignacion_id = ?",
+      [profesorId, rol, id]
+    );
+    res.status(200).json({ message: "Asignación modificada con éxito." });
+  } catch (error) {
+    console.log(error);
+    res
+      .status(500)
+      .json({
+        message: "Error al modificar la asignación.",
+        error: error.message,
+      });
+  }
+};
+
 export const deleteAssignment = async (req, res) => {
   const { id } = req.params;
   const connection = await createConnection();
@@ -17,14 +50,17 @@ export const deleteAssignment = async (req, res) => {
   } catch (error) {
     res
       .status(500)
-      .json({ message: "Error al eliminar la asignación.", error: error.message });
+      .json({
+        message: "Error al eliminar la asignación.",
+        error: error.message,
+      });
   }
 };
 
 export const assignProfessorToStudent = async (req, res) => {
   const connection = await createConnection();
   const { alumnoId, profesorId, rol } = req.body;
-  console.log(alumnoId, profesorId, rol)
+  console.log(alumnoId, profesorId, rol);
   try {
     //Ese alumno ya fue asignado a ese profesor
     const [rev] = await connection.execute(
@@ -34,12 +70,10 @@ export const assignProfessorToStudent = async (req, res) => {
 
     console.log(rev);
     if (rev[0]) {
-      return res
-        .status(409)
-        .json({
-          message: "El alumno ya fue asignado a ese profesor.",
-          data: rev,
-        });
+      return res.status(409).json({
+        message: "El alumno ya fue asignado a ese profesor.",
+        data: rev,
+      });
     }
 
     const [results] = await connection.execute(
@@ -73,12 +107,10 @@ export const getAssignmentsByStudent = async (req, res) => {
     res.json(results);
   } catch (error) {
     if (connection) await connection.end();
-    res
-      .status(500)
-      .json({
-        message: "Error al obtener las asignaciones.",
-        error: error.message,
-      });
+    res.status(500).json({
+      message: "Error al obtener las asignaciones.",
+      error: error.message,
+    });
   }
 };
 export const getGuiaAssignmentsByProfessor = async (req, res) => {
@@ -91,12 +123,10 @@ export const getGuiaAssignmentsByProfessor = async (req, res) => {
     );
     res.json(guiaAssignments);
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        message: "Error al obtener las asignaciones como guía.",
-        error: error.message,
-      });
+    res.status(500).json({
+      message: "Error al obtener las asignaciones como guía.",
+      error: error.message,
+    });
   } finally {
     if (connection) await connection.end();
   }
@@ -112,12 +142,10 @@ export const getInformanteAssignmentsByProfessor = async (req, res) => {
     );
     res.json(informanteAssignments);
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        message: "Error al obtener las asignaciones como informante.",
-        error: error.message,
-      });
+    res.status(500).json({
+      message: "Error al obtener las asignaciones como informante.",
+      error: error.message,
+    });
   } finally {
     if (connection) await connection.end();
   }
@@ -133,12 +161,10 @@ export const getAllAssignments = async (req, res) => {
     res.status(200).json(results);
   } catch (error) {
     if (connection) await connection.end();
-    res
-      .status(500)
-      .json({
-        message: "Error al obtener las asignaciones.",
-        error: error.message,
-      });
+    res.status(500).json({
+      message: "Error al obtener las asignaciones.",
+      error: error.message,
+    });
   }
 };
 /* SELECT asi.asignacion_id, a.nombre, p.nombre, asi.rol FROM alumnos as a INNER JOIN asignaciones_profesores as asi ON a.RUT = asi.alumno_RUT INNER JOIN profesores as p ON asi.profesor_id = p.profesor_id; */

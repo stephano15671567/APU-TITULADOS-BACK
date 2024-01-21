@@ -1,5 +1,6 @@
 import express from 'express';
 import {
+  modifyAssignment,
   deleteAssignment,
   assignProfessorToStudent,
   getAssignmentsByStudent,
@@ -21,7 +22,7 @@ router.get('/guia/:profesorId', getGuiaAssignmentsByProfessor);
 router.get('/informante/:profesorId', getInformanteAssignmentsByProfessor);
 router.get('/', getAllAssignments);
 router.delete('/:id', deleteAssignment);
-
+router.put('/:id', modifyAssignment)
 
 
 
