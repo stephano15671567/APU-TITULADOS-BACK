@@ -1,5 +1,6 @@
 import express from 'express';
 import {
+  deleteAssignment,
   assignProfessorToStudent,
   getAssignmentsByStudent,
   getGuiaAssignmentsByProfessor,
@@ -16,14 +17,10 @@ router.post('/', assignProfessorToStudent);
 
 // Ruta para obtener todas las asignaciones de un alumno específico
 router.get('/:alumnoId', getAssignmentsByStudent);
-
-
-
-
-
 router.get('/guia/:profesorId', getGuiaAssignmentsByProfessor);
 router.get('/informante/:profesorId', getInformanteAssignmentsByProfessor);
-router.get('/', getAllAssignments)
+router.get('/', getAllAssignments);
+router.delete('/:id', deleteAssignment);
 
 
 

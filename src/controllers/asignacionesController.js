@@ -5,6 +5,22 @@ const createConnection = async () => {
   return await mysql2.createConnection(db);
 };
 
+export const deleteAssignment = async (req, res) => {
+  const { id } = req.params;
+  const connection = await createConnection();
+  try {
+    const [results] = await connection.execute(
+      "DELETE FROM asignaciones_profesores WHERE `asignaciones_profesores`.`asignacion_id` = ?",
+      [id]
+    );
+    res.status(200).json({ message: "Asignación eliminada con éxito." });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error al eliminar la asignación.", error: error.message });
+  }
+};
+
 export const assignProfessorToStudent = async (req, res) => {
   const connection = await createConnection();
   const { alumnoId, profesorId, rol } = req.body;
