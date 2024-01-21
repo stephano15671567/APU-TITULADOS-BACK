@@ -8,6 +8,7 @@ const createConnection = async () => {
 export const assignProfessorToStudent = async (req, res) => {
   const connection = await createConnection();
   const { alumnoId, profesorId, rol } = req.body;
+  console.log(alumnoId, profesorId, rol)
   try {
     //Ese alumno ya fue asignado a ese profesor
     const [rev] = await connection.execute(
