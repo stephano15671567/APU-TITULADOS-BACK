@@ -10,6 +10,8 @@ import profesoresRoutes from './routes/profesoresRoutes.js';
 import alumnosRoutes from './routes/alumnosRoutes.js';
 import asignacionesRoutes from './routes/asignacionesRoutes.js';
 import secretariasRoutes from './routes/secretariaRoutes.js';
+import archivosRoutes from './routes/archivosRoutes.js';
+import fileUpload from 'express-fileupload';
 
 
 const app = express();
@@ -26,7 +28,7 @@ const corsOptions = {
 
 app.set("env", value.NODE_ENV);
 app.set("port", value.RUN_PORT);
-
+app.use(fileUpload());
 app.use(morgan("dev"));
 app.use(cors(corsOptions));
 app.use(express.json({ limit: "500MB" }));
@@ -45,6 +47,7 @@ app.use('/api/profesores', profesoresRoutes);
 app.use('/api/alumnos', alumnosRoutes);
 app.use('/api/asignaciones', asignacionesRoutes);
 app.use('/api/secretarias', secretariasRoutes);
+app.use('/api/archivos', archivosRoutes)
 
 
 export default app;

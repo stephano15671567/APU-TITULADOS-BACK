@@ -7,7 +7,7 @@ const createConnection = async () => {
 };
 
 export const subirArchivo = async (req, res) => {
-    const files = req.files;
+    const files = req.files.file.name;
     console.log(files)
     return res.json({ message: "Archivo subido correctamente", status: 200});
 }
