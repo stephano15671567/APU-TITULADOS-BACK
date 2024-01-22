@@ -8,6 +8,7 @@ const createConnection = async () => {
 
 const uploadFile = async (req, res) => {
   try {
+    console.log(req.files)
     // Crear la conexión con la base de datos
     const connection = await createConnection();
 
