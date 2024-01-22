@@ -13,14 +13,16 @@ const createConnection = async () => {
 
 export const subirArchivo = async (req, res) => {
     let file;
-    //CAMBIAR FILENAME POR RUT REQL DEL MONO QL Q LO MANDA     
 
+    const {id} = req.params;
+    console.log(req.files.file)
+    console.log(id)
     if (!req.files || Object.keys(req.files).length === 0) {
       return res.status(400).json({ message: "No se ha subido ningún archivo" });
     }
-    //File es el nombre con el que se manda el archivo desde el front
+    //File es el nombre con el que se manda el archivo desde el front Y TAMBIÉN HAY QUE ASEGURARSE LUEGO DE LA EXTENSIÓN SOLO SEA WORD OJITO CON LA DROGA
     file = req.files.file;
-    let path = './src/public/fichas_tesis' + file.name;
+    let path = './src/public/fichas_tesis/' + id + ".word";
     file.mv(path, (err) => {
       if (err) {
         return res.status(500).json({ message: "No se ha podido subir el archivo" });
