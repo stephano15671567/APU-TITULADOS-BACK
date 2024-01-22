@@ -10,6 +10,7 @@ import profesoresRoutes from './routes/profesoresRoutes.js';
 import alumnosRoutes from './routes/alumnosRoutes.js';
 import asignacionesRoutes from './routes/asignacionesRoutes.js';
 import secretariasRoutes from './routes/secretariaRoutes.js';
+import notasRoutes from './routes/notasRoutes.js';
 
 
 const app = express();
@@ -45,6 +46,7 @@ app.use('/api/profesores', profesoresRoutes);
 app.use('/api/alumnos', alumnosRoutes);
 app.use('/api/asignaciones', asignacionesRoutes);
 app.use('/api/secretarias', secretariasRoutes);
+app.use('/api/notas', notasRoutes);
 
 
 export default app;
