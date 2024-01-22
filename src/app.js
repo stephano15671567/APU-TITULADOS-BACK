@@ -1,6 +1,6 @@
 
 import 'dotenv/config';
-import express from 'express';
+import express, { response } from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
 import session from 'express-session';
@@ -28,7 +28,13 @@ const corsOptions = {
 
 app.set("env", value.NODE_ENV);
 app.set("port", value.RUN_PORT);
-app.use(fileUpload());
+app.use(fileUpload({
+  createParentPath: true,
+  limits: { fileSize: 500 * 1024 * 1024 },
+  abortOnLimit: true,
+  responseOnLimit: "El archivo es demasiado grande",
+}
+));
 app.use(morgan("dev"));
 app.use(cors(corsOptions));
 app.use(express.json({ limit: "500MB" }));
