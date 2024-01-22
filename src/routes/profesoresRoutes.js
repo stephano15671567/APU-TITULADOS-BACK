@@ -6,7 +6,8 @@ import {
   updateProfesor,
   deleteProfesor,
   authAcademico,
-  verifyToken
+  verifyToken,
+  updateNota
 } from '../controllers/profesoresController.js';
 
 const router = express.Router();
@@ -18,5 +19,10 @@ router.get('/:id', getProfesor);
 router.post('/', createProfesor);
 router.put('/:id', updateProfesor);
 router.delete('/:id', deleteProfesor);
+router.post('/updateNota', updateNota);
 
 export default router;
+
+
+
+

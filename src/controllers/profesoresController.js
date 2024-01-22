@@ -153,6 +153,24 @@ export const verifyToken = async (req, res) => {
   }
 };
 
+export const updateNota = async (req, res) => {
+  const connection = await createConnection();
+  const { estudianteId, nota } = req.body;
+
+  try {
+      await connection.query(
+          'INSERT INTO notas (alumno_RUT, nota_id) VALUES (?, ?) ON DUPLICATE KEY UPDATE nota_guia = ?',
+          [estudianteId, nota, nota]
+      );
+      res.status(200).json({ message: 'Nota actualizada exitosamente' });
+  } catch (error) {
+      console.error('Error al actualizar la nota:', error);
+      res.status(500).send('Error al actualizar la nota');
+  } finally {
+      await connection.end();
+  }
+};
+
 
 
 
