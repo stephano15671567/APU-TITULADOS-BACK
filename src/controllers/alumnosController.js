@@ -11,10 +11,11 @@ export const verifyToken = async (req, res) => {
     if (req.headers.authorization === null) {
       return res.status(401).json({status: false, message: "Token no válido"})
     }
+    
     const token = req.headers.authorization.split(" ")[1];
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     if (decoded.rol === "alumno"){
-      return res.status(200).json({status: true, rol: "alumno",message: "Token verificado", token: req.headers.authorization.split(" ")[1]})
+      return res.status(200).json({status: true, rol: "alumno", id: decoded.id, message: "Token verificado", token: req.headers.authorization.split(" ")[1]})
     }
     return res.status(401).json({message: "Token vencido o inválido"})
   }catch(e){
@@ -30,9 +31,10 @@ export const authAlumno = async (req, res) => {
     const { token } = req.body;
     const token_dec = jwt.decode(token);
     const [user] = await connection.execute(
-      "SELECT mail FROM alumnos WHERE mail = ?",
+      "SELECT mail, RUT FROM alumnos WHERE mail = ?",
       [token_dec.email]
     );
+    console.log(user)
     if (user.length == 0) { //Situación donde no existe alumno dentro de la bd
       await connection.end();
       return res
@@ -57,6 +59,7 @@ export const authAlumno = async (req, res) => {
         status: true,
         rol: "alumno",
         email: token_dec.email,
+        id: user[0].RUT,
       };
       
       const token_enc = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
