@@ -52,6 +52,15 @@ export const createProfesor = async (req, res) => {
 
 //agregar profesor
 export const updateProfesor = async (req, res) => {
+
+
+
+
+
+
+
+
+
   const connection = await createConnection();
   const { id } = req.params;
   const { nombre, mail} = req.body;

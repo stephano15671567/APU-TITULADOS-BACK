@@ -78,9 +78,13 @@ export const assignProfessorToStudent = async (req, res) => {
 
     const [results] = await connection.execute(
       "INSERT INTO asignaciones_profesores (alumno_RUT, profesor_id, rol) VALUES (?, ?, ?)",
+      
       [alumnoId, profesorId, rol]
     );
-
+      const[notas] = await connection.execute(
+        "INSERT INTO notas(alumno_RUT) VALUES (?)",
+         [alumnoId]
+      )
     res
       .status(201)
       .json({ message: "Asignación creada con éxito.", data: results });
