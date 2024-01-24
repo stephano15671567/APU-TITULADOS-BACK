@@ -11,6 +11,20 @@ const createConnection = async () => {
   return await mysql2.createConnection(db);
 };
 
+export const descargar = async (req, res) => {  
+  const filePath = './src/public/fichas_tesis/' + req.params.rut + ".word";
+  res.download(filePath, (err) => {
+    if (err) {
+      // Log the error, but don't send another response
+      console.error('Error al descargar el archivo:', err);
+    } else {
+      // Log success, no need to send another response
+      console.log("Archivo descargado con éxito");
+    }
+  });
+};
+
+
 export const subirArchivo = async (req, res) => {
     let file;
 
