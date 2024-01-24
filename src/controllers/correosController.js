@@ -13,8 +13,8 @@ const correo_SST = "maximiliano.aguirre@alumnos.uv.cl";
 const createConnection = async () => {
   return await mysql2.createConnection(db);
 };
-const user = "maximiliano.aguirre@alumnos.uv.cl";
-const pass = "2pacisalive123";
+const user = "";
+const pass = "";
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
   port: 465,
