@@ -37,9 +37,9 @@ const uploadFile = async (req, res) => {
 
     // Preparar y ejecutar las consultas de inserción para cada fila
     const insertQuery = "INSERT INTO alumnos (nombre, RUT, CODIGO, ANO_INGRESO, ANO_EGRESO, n_resolucion, fecha_examen, hora, mail) VALUES (?,?,?,?,?,?,?,?,?);";
-const insertPromises = data.map((elemento) => {
-  const elemento_exacto = [
-    elemento["Alumno"] || null,  // Replace "Alumno" with the correct column name if it's different
+    const insertPromises = data.map((elemento) => {
+    const elemento_exacto = [
+    elemento["Alumno"] || null,  
     elemento["RUT"] || null,
     elemento["CODIGO"] || null,
     elemento["AÑO INGRESO"] || null,
