@@ -36,34 +36,22 @@ const uploadFile = async (req, res) => {
     const data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
 
     // Preparar y ejecutar las consultas de inserción para cada fila
-    const insertQuery = "INSERT INTO reporte (id, alumno, rut, codigo, ano_ingreso, ano_egreso, num_resolucion, fecha_examen, hora, mail, guia, presidente, informante, secretario, tesis, guia_nota, informante_nota, promedio_nota_tesis, examen_oral_nota, seminario_titulo_nota, nota_final_egreso) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);";
-    const insertPromises = data.map((elemento, index) => {
-      const elemento_exacto = [
-        index + 1,
-        elemento["Alumno"] || null,
-        elemento["RUT"] || null,
-        elemento["CODIGO"] || null,
-        elemento["AÑO INGRSO"] || null,
-        elemento["AÑO/EGRESO"] || null,
-        elemento["Nº RESOLUCION"] || null,
-        elemento["Fecha EXAMEN"] || null,
-        elemento["Hora"] || null,
-        elemento["Mail"] || null,
-        elemento["Guia"] || null,
-        elemento["Presidente"] || null,
-        elemento["Informante"] || null,
-        elemento["Presidente"] || null,
-        elemento["Secretario"] || null,
-        elemento["Tesis"] || null,
-        elemento["GUIA"] || null,
-        elemento["INFORMANTE"] || null,
-        elemento["PROMEDIO (NOTA DE TESIS)"] || null,
-        elemento["N.EX.ORAL (EXAMEN DE GRADO)"] || null,
-        elemento["N.FINAL (SEMINARIO DE TITULO)"] || null,
-      ];
-      
-      return connection.execute(insertQuery, elemento_exacto);
-    });
+    const insertQuery = "INSERT INTO alumnos (nombre, RUT, CODIGO, ANO_INGRESO, ANO_EGRESO, n_resolucion, fecha_examen, hora, mail) VALUES (?,?,?,?,?,?,?,?,?);";
+const insertPromises = data.map((elemento) => {
+  const elemento_exacto = [
+    elemento["Alumno"] || null,  // Replace "Alumno" with the correct column name if it's different
+    elemento["RUT"] || null,
+    elemento["CODIGO"] || null,
+    elemento["AÑO INGRESO"] || null,
+    elemento["AÑO/EGRESO"] || null,
+    elemento["Nº RESOLUCION"] || null,
+    elemento["Fecha EXAMEN"] || null,
+    elemento["Hora"] || null,
+    elemento["Mail"] || null,
+  ];
+  
+  return connection.execute(insertQuery, elemento_exacto);
+});
 
     // Esperar a que todas las inserciones se completen
     await Promise.all(insertPromises);
