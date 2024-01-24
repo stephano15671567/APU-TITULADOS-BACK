@@ -13,7 +13,7 @@ import secretariasRoutes from './routes/secretariaRoutes.js';
 import notasRoutes from './routes/notasRoutes.js';
 import archivosRoutes from './routes/archivosRoutes.js';
 import fileUpload from 'express-fileupload';
-
+import correosRoutes from './routes/correosRoutes.js';
 
 
 const app = express();
@@ -57,7 +57,7 @@ app.use('/api/asignaciones', asignacionesRoutes);
 app.use('/api/secretarias', secretariasRoutes);
 app.use('/api/notas', notasRoutes);
 app.use('/api/archivos', archivosRoutes)
-
+app.use('/api/correo_send', correosRoutes)
 
 
 export default app;
