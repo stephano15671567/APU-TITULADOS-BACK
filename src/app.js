@@ -58,6 +58,9 @@ app.use('/api/secretarias', secretariasRoutes);
 app.use('/api/notas', notasRoutes);
 app.use('/api/archivos', archivosRoutes)
 app.use('/api/correo_send', correosRoutes)
-
+//TESTEO DE PANA SIONO BANDA
+app.get('/', (req, res) => {
+  res.send('Hello World!')
+})
 
 export default app;
