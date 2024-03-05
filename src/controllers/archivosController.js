@@ -28,19 +28,39 @@ export const descargar = async (req, res) => {
 export const subirArchivo = async (req, res) => {
     let file;
 
-    const {id} = req.params;
+    const {id: name} = req.params;
     console.log(req.files.file)
-    console.log(id)
+    console.log(name)
     if (!req.files || Object.keys(req.files).length === 0) {
       return res.status(400).json({ message: "No se ha subido ningún archivo" });
     }
     //File es el nombre con el que se manda el archivo desde el front Y TAMBIÉN HAY QUE ASEGURARSE LUEGO DE LA EXTENSIÓN SOLO SEA WORD OJITO CON LA DROGA
     file = req.files.file;
-    let path = './src/public/fichas_tesis/' + id + ".word";
+    let path = './src/public/fichas_tesis/' + name + ".word";
     file.mv(path, (err) => {
-      if (err) {
+      if (err) { 
         return res.status(500).json({ message: "No se ha podido subir el archivo" });
       }
     });
     res.status(200).json({ message: "Archivo subido con éxito." });
+}
+
+export const subirRubrica = async (req, res) => {
+  let file;
+
+  const {name} = req.params;
+  console.log(req.params)
+  console.log(name)
+  if (!req.files || Object.keys(req.files).length === 0) {
+    return res.status(400).json({ message: "No se ha subido ningún archivo" });
+  }
+  //File es el nombre con el que se manda el archivo desde el front Y TAMBIÉN HAY QUE ASEGURARSE LUEGO DE LA EXTENSIÓN SOLO SEA WORD OJITO CON LA DROGA
+  file = req.files.file;
+  let path = './src/public/rubricas/' + name + ".word";
+  file.mv(path, (err) => {
+    if (err) {
+      return res.status(500).json({ message: "No se ha podido subir el archivo" });
+    }
+  });
+  res.status(200).json({ message: "Archivo subido con éxito." });
 }
