@@ -37,6 +37,7 @@
     "passport-jwt": "^4.0.1",
     "react-router-dom": "^6.18.0",
     "uuid": "^9.0.1",
+    "write-excel-file": "^1.4.29",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {

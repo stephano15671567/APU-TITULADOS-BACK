@@ -78,6 +78,7 @@ export const authAlumno = async (req, res) => {
 
 // Crear un alumno
 export const createAlumno = async (req, res) => {
+  console.log(req.body)
   const {
     nombre,
     RUT,
@@ -87,15 +88,13 @@ export const createAlumno = async (req, res) => {
     n_resolucion,
     hora,
     fecha_examen,
-    ficha_inscripcion,
-    tesis,
     mail,
-    Gtoken,
+    Gtoken = null ,
   } = req.body;
   try {
     const connection = await createConnection();
     const [results] = await connection.execute(
-      "INSERT INTO alumnos (nombre, RUT, CODIGO, ANO_INGRESO, ANO_EGRESO, n_resolucion, hora, fecha_examen, ficha_inscripcion, tesis, mail, Gtoken) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      "INSERT INTO alumnos (nombre, RUT, CODIGO, ANO_INGRESO, ANO_EGRESO, n_resolucion, hora, fecha_examen, mail, Gtoken) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
       [
         nombre,
         RUT,
@@ -105,8 +104,6 @@ export const createAlumno = async (req, res) => {
         n_resolucion,
         hora,
         fecha_examen,
-        ficha_inscripcion,
-        tesis,
         mail,
         Gtoken,
       ]
@@ -116,6 +113,7 @@ export const createAlumno = async (req, res) => {
       .status(201)
       .json({ message: `Alumno creado con RUT: ${results.insertId}` });
   } catch (error) {
+    console.log(error)
     res.status(500).json({ message: error.message });
   }
 };
@@ -143,15 +141,14 @@ export const updateAlumno = async (req, res) => {
     n_resolucion,
     hora,
     fecha_examen,
-    ficha_inscripcion,
-    tesis,
+    
     mail,
     Gtoken,
   } = req.body;
   try {
     const connection = await createConnection();
     const [results] = await connection.execute(
-      "UPDATE alumnos SET nombre = ?, CODIGO = ?, ANO_INGRESO = ?, ANO_EGRESO = ?, n_resolucion = ?, hora = ?, fecha_examen = ?, ficha_inscripcion = ?, tesis = ?, mail = ?, Gtoken = ? WHERE RUT = ?",
+      "UPDATE alumnos SET nombre = ?, CODIGO = ?, ANO_INGRESO = ?, ANO_EGRESO = ?, n_resolucion = ?, hora = ?, fecha_examen = ?, mail = ?, Gtoken = ? WHERE RUT = ?",
       [
         nombre,
         CODIGO,
@@ -160,8 +157,6 @@ export const updateAlumno = async (req, res) => {
         n_resolucion,
         hora,
         fecha_examen,
-        ficha_inscripcion,
-        tesis,
         mail,
         Gtoken,
         RUT,

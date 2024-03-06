@@ -14,7 +14,7 @@ import notasRoutes from './routes/notasRoutes.js';
 import archivosRoutes from './routes/archivosRoutes.js';
 import fileUpload from 'express-fileupload';
 import correosRoutes from './routes/correosRoutes.js';
-
+import reportRoutes from './routes/reportRoutes.js';
 
 const app = express();
 
@@ -48,7 +48,7 @@ app.use(
     saveUninitialized: false,
   })
 );
-
+app.use('/api/report', reportRoutes);
 //endpoints
 app.use('/upload', uploadRoutes);
 app.use('/api/profesores', profesoresRoutes);

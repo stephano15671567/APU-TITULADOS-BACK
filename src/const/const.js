@@ -9,7 +9,7 @@ const STATIC_PATH = process.env.STATIC_PATH;
 
 // BD
 const HOST = process.env.HOST;
-const USER = process.env.USERNAME;
+const USER = process.env.USER;
 const DATABASE = process.env.DATABASE;
 const PASSWORD = process.env.PASSWORD;
 
