@@ -90,11 +90,13 @@ export const createAlumno = async (req, res) => {
     fecha_examen,
     mail,
     Gtoken = null ,
+    secretario,
+    presidente,
   } = req.body;
   try {
     const connection = await createConnection();
     const [results] = await connection.execute(
-      "INSERT INTO alumnos (nombre, RUT, CODIGO, ANO_INGRESO, ANO_EGRESO, n_resolucion, hora, fecha_examen, mail, Gtoken) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      "INSERT INTO alumnos (nombre, RUT, CODIGO, ANO_INGRESO, ANO_EGRESO, n_resolucion, hora, fecha_examen, mail, Gtoken, secretario, presidente) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
       [
         nombre,
         RUT,
@@ -106,6 +108,8 @@ export const createAlumno = async (req, res) => {
         fecha_examen,
         mail,
         Gtoken,
+        secretario,
+        presidente,
       ]
     );
     await connection.end();
@@ -144,11 +148,14 @@ export const updateAlumno = async (req, res) => {
     
     mail,
     Gtoken,
+    secretario,
+    presidente,
   } = req.body;
   try {
     const connection = await createConnection();
     const [results] = await connection.execute(
-      "UPDATE alumnos SET nombre = ?, CODIGO = ?, ANO_INGRESO = ?, ANO_EGRESO = ?, n_resolucion = ?, hora = ?, fecha_examen = ?, mail = ?, Gtoken = ? WHERE RUT = ?",
+      "UPDATE alumnos SET nombre = ?, CODIGO = ?, ANO_INGRESO = ?, ANO_EGRESO = ?, n_resolucion = ?, hora = ?, fecha_examen = ?, mail = ?, Gtoken = ?, secretario = ?, presidente = ? WHERE RUT = ?",
+
       [
         nombre,
         CODIGO,
@@ -159,6 +166,8 @@ export const updateAlumno = async (req, res) => {
         fecha_examen,
         mail,
         Gtoken,
+        secretario,
+        presidente,
         RUT,
       ]
     );
