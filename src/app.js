@@ -16,6 +16,7 @@ import fileUpload from 'express-fileupload';
 import correosRoutes from './routes/correosRoutes.js';
 import reportRoutes from './routes/reportRoutes.js';
 
+
 const app = express();
 
 const corsOptions = {
@@ -49,6 +50,7 @@ app.use(
   })
 );
 app.use('/api/report', reportRoutes);
+
 //endpoints
 app.use('/upload', uploadRoutes);
 app.use('/api/profesores', profesoresRoutes);
