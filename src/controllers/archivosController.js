@@ -1,66 +1,83 @@
 import mysql2 from "mysql2/promise";
 import db from "../database/connection.js";
-import jwt from "jsonwebtoken"; 
 import path from 'path';
 import { fileURLToPath } from 'url';
+import fs from 'fs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const createConnection = async () => {
-  return await mysql2.createConnection(db);
-};
-
-export const descargar = async (req, res) => {  
-  const filePath = './src/public/fichas_tesis/' + req.params.rut + ".word";
-  res.download(filePath, (err) => {
-    if (err) {
-      // Log the error, but don't send another response
-      console.error('Error al descargar el archivo:', err);
-    } else {
-      // Log success, no need to send another response
-      console.log("Archivo descargado con éxito");
-    }
-  });
-};
-
-
-export const subirArchivo = async (req, res) => {
-    let file;
-
-    const {id: name} = req.params;
-    console.log(req.files.file)
-    console.log(name)
-    if (!req.files || Object.keys(req.files).length === 0) {
-      return res.status(400).json({ message: "No se ha subido ningún archivo" });
-    }
-    //File es el nombre con el que se manda el archivo desde el front Y TAMBIÉN HAY QUE ASEGURARSE LUEGO DE LA EXTENSIÓN SOLO SEA WORD OJITO CON LA DROGA
-    file = req.files.file;
-    let path = './src/public/fichas_tesis/' + name + ".word";
-    file.mv(path, (err) => {
-      if (err) { 
-        return res.status(500).json({ message: "No se ha podido subir el archivo" });
+export const descargar = async (req, res) => {
+  const filePath = path.join(__dirname, '../public/fichas_tesis', `${req.params.rut}.docx`);
+  if (fs.existsSync(filePath)) {
+    res.download(filePath, (err) => {
+      if (err) {
+        console.error('Error al descargar el archivo:', err);
+        res.status(500).send({
+          message: "No se pudo descargar el archivo. " + err,
+        });
+      } else {
+        console.log("Archivo descargado con éxito");
       }
     });
-    res.status(200).json({ message: "Archivo subido con éxito." });
-}
-
-export const subirRubrica = async (req, res) => {
-  let file;
-
-  const {name} = req.params;
-  console.log(req.params)
-  console.log(name)
-  if (!req.files || Object.keys(req.files).length === 0) {
-    return res.status(400).json({ message: "No se ha subido ningún archivo" });
+  } else {
+    res.status(404).send({
+      message: "Archivo no encontrado."
+    });
   }
-  //File es el nombre con el que se manda el archivo desde el front Y TAMBIÉN HAY QUE ASEGURARSE LUEGO DE LA EXTENSIÓN SOLO SEA WORD OJITO CON LA DROGA
-  file = req.files.file;
-  let path = './src/public/rubricas/' + name + ".word";
-  file.mv(path, (err) => {
+};
+
+export const descargarRubrica = async (req, res) => {
+  const filePath = path.join(__dirname, '../public/rubricas', `FORMATO PROFESOR INFORMANTE.xlsx`);
+  if (fs.existsSync(filePath)) {
+    res.download(filePath, `FORMATO PROFESOR INFORMANTE.xlsx`, (err) => {
+      if (err) {
+        res.status(500).send({
+          message: "No se pudo descargar el archivo. " + err,
+        });
+      }
+    });
+  } else {
+    res.status(404).send({
+      message: "Archivo no encontrado."
+    });
+  }
+};
+
+export const subirArchivo = async (req, res) => {
+  if (!req.files || Object.keys(req.files).length === 0) {
+    return res.status(400).send({ message: "No se ha subido ningún archivo" });
+  }
+  
+  let file = req.files.file;
+  const name = req.params.id; 
+  let uploadPath = path.join(__dirname, '../public/fichas_tesis', `${name}.docx`);
+
+  file.mv(uploadPath, (err) => {
     if (err) {
-      return res.status(500).json({ message: "No se ha podido subir el archivo" });
+      console.error('Error al subir el archivo:', err);
+      return res.status(500).send({ message: "No se ha podido subir el archivo" });
+    } else {
+      res.status(200).send({ message: "Archivo subido con éxito." });
     }
   });
-  res.status(200).json({ message: "Archivo subido con éxito." });
-}
+};
+
+export const subirRubrica = async (req, res) => {
+  if (!req.files || Object.keys(req.files).length === 0) {
+    return res.status(400).send({ message: "No se ha subido ningún archivo" });
+  }
+  
+  let file = req.files.file;
+  const name = req.params.name; 
+  let uploadPath = path.join(__dirname, '../public/rubricas', `${name}.xlsx`);
+
+  file.mv(uploadPath, (err) => {
+    if (err) {
+      console.error('Error al subir la rúbrica:', err);
+      return res.status(500).send({ message: "No se ha podido subir la rúbrica" });
+    } else {
+      res.status(200).send({ message: "Rúbrica subida con éxito." });
+    }
+  });
+};
