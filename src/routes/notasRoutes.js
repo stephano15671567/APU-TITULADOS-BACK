@@ -4,7 +4,9 @@ import {
   getAllNotas,
   getNotasAlumno,
   upsertNota,
-  deleteNota
+  deleteNota,
+  upsertNotaDefensa,
+  
 } from '../controllers/notasController.js';
 
 const router = express.Router();
@@ -20,6 +22,13 @@ router.post('/upsert', upsertNota);
 
 // Ruta para eliminar una nota
 router.delete('/:nota_id', deleteNota);
+
+
+router.post('/examenoral', upsertNotaDefensa);
+
+
+
+
 
 export default router;
 

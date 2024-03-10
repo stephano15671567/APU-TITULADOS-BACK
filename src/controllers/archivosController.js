@@ -44,6 +44,23 @@ export const descargarRubrica = async (req, res) => {
   }
 };
 
+export const descargarRubricaGuia = async (req, res) => {
+  const filePath = path.join(__dirname, '../public/rubricas', `FORMATO PROFESOR INFORMANTE.xlsx`);
+  if (fs.existsSync(filePath)) {
+    res.download(filePath, `FORMATO PROFESOR INFORMANTE.xlsx`, (err) => {
+      if (err) {
+        res.status(500).send({
+          message: "No se pudo descargar el archivo. " + err,
+        });
+      }
+    });
+  } else {
+    res.status(404).send({
+      message: "Archivo no encontrado."
+    });
+  }
+};
+
 export const subirArchivo = async (req, res) => {
   if (!req.files || Object.keys(req.files).length === 0) {
     return res.status(400).send({ message: "No se ha subido ningún archivo" });

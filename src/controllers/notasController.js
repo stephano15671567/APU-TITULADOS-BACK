@@ -87,3 +87,35 @@ export const deleteNota = async (req, res) => {
     res.status(500).json({ message: "Error al eliminar la nota: " + error.message });
   }
 };
+
+export const upsertNotaDefensa = async (req, res) => {
+  const { alumno_RUT, nota_defensa } = req.body;
+  try {
+    const connection = await createConnection();
+    const [existing] = await connection.execute(
+      "SELECT nota_id FROM notas WHERE alumno_RUT = ?",
+      [alumno_RUT]
+    );
+
+    if (existing.length > 0) {
+      // Update the existing note
+      await connection.execute(
+        "UPDATE notas SET nota_examen_oral = ? WHERE alumno_RUT = ?",
+        [nota_defensa, alumno_RUT]
+      );
+    } else {
+      // Insert a new note
+      await connection.execute(
+        "INSERT INTO notas (alumno_RUT, nota_examen_oral) VALUES (?, ?)",
+        [alumno_RUT, nota_defensa]
+      );
+    }
+    await connection.end();
+    res.status(200).json({ message: "Nota de defensa actualizada con éxito" });
+  } catch (error) {
+    res.status(500).json({ message: "Error al actualizar la nota de defensa: " + error.message });
+  }
+};
+
+
+
