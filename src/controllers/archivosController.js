@@ -95,41 +95,74 @@ export const subirArchivo = async (req, res) => {
 
 
 
-
 export const subirRubricaInformante = async (req, res) => {
-  if (!req.files || Object.keys(req.files).length === 0) {
-    return res.status(400).send({ message: "No se ha subido ningún archivo" });
+  if (!req.files || !req.files.file) {
+    return res.status(400).send({ message: "No se ha subido ningún archivo." });
   }
-  
-  let file = req.files.file;
-  const name = req.params.name; 
-  let uploadPath = path.join(__dirname, '../public/rubricas/Informante', `${name}.xlsx`);
+
+  const file = req.files.file;
+  const alumnoRUT = req.params.rut;
+  const uploadPath = path.join(__dirname, '../public/rubricas/Informante2', `${alumnoRUT}.xlsx`);
 
   file.mv(uploadPath, (err) => {
     if (err) {
-      console.error('Error al subir la rúbrica:', err);
-      return res.status(500).send({ message: "No se ha podido subir la rúbrica" });
-    } else {
-      res.status(200).send({ message: "Rúbrica subida con éxito." });
+      console.error('Error al subir la rúbrica del informante:', err);
+      return res.status(500).send({ message: "No se ha podido subir el archivo" });
     }
+    res.send({ message: "La rúbrica del informante ha sido subida correctamente." });
   });
 };
 
+// Existing function for subirRubricaGuia with database interaction removed
 export const subirRubricaGuia = async (req, res) => {
-  if (!req.files || Object.keys(req.files).length === 0) {
-    return res.status(400).send({ message: "No se ha subido ningún archivo" });
+  if (!req.files || !req.files.file) {
+    return res.status(400).send({ message: "No se ha subido ningún archivo." });
   }
-  
-  let file = req.files.file;
-  const name = req.params.name; 
-  let uploadPath = path.join(__dirname, '../public/rubricas/Guía', `${name}.xlsx`);
+
+  const file = req.files.file;
+  const alumnoRUT = req.params.rut;
+  const uploadPath = path.join(__dirname, '../public/rubricas/Guia2', `${alumnoRUT}.xlsx`);
 
   file.mv(uploadPath, (err) => {
     if (err) {
-      console.error('Error al subir la rúbrica:', err);
-      return res.status(500).send({ message: "No se ha podido subir la rúbrica" });
-    } else {
-      res.status(200).send({ message: "Rúbrica subida con éxito." });
+      console.error('Error al subir la rúbrica del guía:', err);
+      return res.status(500).send({ message: "No se ha podido subir el archivo" });
     }
+    res.send({ message: "La rúbrica del guía ha sido subida correctamente." });
   });
+};
+
+
+export const descargarRubricaGuiaConNotas = async (req, res) => {
+  const filePath = path.join(__dirname, '../public/rubricas/Guia2', `${req.params.rut}.xlsx`);
+  if (fs.existsSync(filePath)) {
+    res.download(filePath, `Rubrica_Guia_Con_Notas_${req.params.rut}.xlsx`, (err) => {
+      if (err) {
+        res.status(500).send({
+          message: "No se pudo descargar el archivo. " + err,
+        });
+      }
+    });
+  } else {
+    res.status(404).send({
+      message: "Archivo no encontrado."
+    });
+  }
+};
+
+export const descargarRubricaInformanteConNotas = async (req, res) => {
+  const filePath = path.join(__dirname, '../public/rubricas/Informante2', `${req.params.rut}.xlsx`);
+  if (fs.existsSync(filePath)) {
+    res.download(filePath, `Rubrica_Informante_Con_Notas_${req.params.rut}.xlsx`, (err) => {
+      if (err) {
+        res.status(500).send({
+          message: "No se pudo descargar el archivo. " + err,
+        });
+      }
+    });
+  } else {
+    res.status(404).send({
+      message: "Archivo no encontrado."
+    });
+  }
 };
