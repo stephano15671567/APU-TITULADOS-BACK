@@ -3,6 +3,9 @@ import db from "../database/connection.js";
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
+import PizZip from 'pizzip';
+import Docxtemplater from 'docxtemplater';
+
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -164,5 +167,67 @@ export const descargarRubricaInformanteConNotas = async (req, res) => {
     res.status(404).send({
       message: "Archivo no encontrado."
     });
+  }
+};
+async function obtenerDatosParaActa(rut) {
+  const query = `
+    SELECT 
+      al.nombre AS nombre_alumno,
+      n.nota_guia AS nota_profesor_guia,
+      n.nota_informante AS nota_profesor_informante,
+      n.nota_final AS nota_tesis,
+      p_guia.nombre AS nombre_profesor_guia,
+      p_inf.nombre AS nombre_profesor_informante
+    FROM alumnos al
+    LEFT JOIN notas n ON al.RUT = n.alumno_RUT
+    LEFT JOIN asignaciones_profesores asig_guia ON al.RUT = asig_guia.alumno_RUT AND asig_guia.rol = 'guia'
+    LEFT JOIN profesores p_guia ON asig_guia.profesor_id = p_guia.profesor_id
+    LEFT JOIN asignaciones_profesores asig_inf ON al.RUT = asig_inf.alumno_RUT AND asig_inf.rol = 'informante'
+    LEFT JOIN profesores p_inf ON asig_inf.profesor_id = p_inf.profesor_id
+    WHERE al.RUT = ?;
+  `;
+
+  const connection = await mysql2.createConnection(db);
+  const [results] = await connection.execute(query, [rut]);
+  await connection.end();
+
+  if (results.length === 0) {
+    throw new Error('No se encontró el alumno con el RUT proporcionado');
+  }
+
+  return results[0];
+}
+
+export const generarYDescargarActa = async (req, res) => {
+  const rut = req.params.rut;
+
+  try {
+    // Obtener los datos necesarios para llenar la plantilla del acta
+    const datosActa = await obtenerDatosParaActa(rut);
+    
+    // Cargar la plantilla de documento Word (DOCX)
+    const templatePath = path.resolve(__dirname, '../public/Acta/ACTA NOTA FINAL Y DE EXAMEN DE TITULO.docx');
+    const content = fs.readFileSync(templatePath, 'binary');
+    const zip = new PizZip(content);
+    const doc = new Docxtemplater(zip, {
+      paragraphLoop: true,
+      linebreaks: true,
+    });
+
+    // Rellenar la plantilla con los datos obtenidos
+    doc.render(datosActa);
+
+    // Generar el documento DOCX
+    const buf = doc.getZip().generate({ type: 'nodebuffer' });
+
+    // Enviar el documento para su descarga
+    const filename = `Acta-${rut}.docx`;
+    res.setHeader('Content-Disposition', 'attachment; filename=' + filename);
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+    res.send(buf);
+
+  } catch (error) {
+    console.error('Error al generar el acta:', error);
+    res.status(500).send('Error al generar el acta');
   }
 };

@@ -7,7 +7,8 @@ import {
   subirArchivo,
   descargar,
   subirRubricaInformante,
-  subirRubricaGuia
+  subirRubricaGuia,
+  generarYDescargarActa
 } from '../controllers/archivosController.js';
 const router = express.Router();
 
@@ -20,7 +21,7 @@ router.post('/subir/rubrica/informante/:rut', subirRubricaInformante);
 router.post('/subir/rubrica/guia/:rut', subirRubricaGuia);
 router.get('/descargar/rubrica/guia/con-notas/:rut', descargarRubricaGuiaConNotas);
 router.get('/descargar/rubrica/informante/con-notas/:rut', descargarRubricaInformanteConNotas);;
-
+router.get('/descargar/acta/:rut', generarYDescargarActa);
 export default router;
 
 
