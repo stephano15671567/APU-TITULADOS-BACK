@@ -4,105 +4,115 @@ import db from "../database/connection.js"; // Asegúrate de que la ruta sea cor
 const createConnection = async () => {
   return await mysql2.createConnection(db);
 };
+const incompatibleRolesMap = {
+  guia: ['informante'],
+  informante: ['guia'],
+  presidente: ['secretario'],
+  secretario: ['presidente'],
+};
+
+const checkForIncompatibleRoles = async (connection, alumnoId, newProfesorId, newRol, existingAssignmentId = null) => {
+  // Fetch existing assignments excluding the current one (if updating)
+  const [existingAssignments] = await connection.execute(
+    "SELECT * FROM asignaciones_profesores WHERE alumno_RUT = ?" + (existingAssignmentId ? " AND asignacion_id != ?" : ""),
+    existingAssignmentId ? [alumnoId, existingAssignmentId] : [alumnoId]
+  );
+
+  // Check if the new role is incompatible with any of the existing roles for this student
+  for (const existingAssignment of existingAssignments) {
+    if (
+      existingAssignment.profesor_id === newProfesorId &&
+      incompatibleRolesMap[newRol]?.includes(existingAssignment.rol)
+    ) {
+      throw new Error("Invalid role combination for the professor and student.");
+    }
+  }
+};
 
 export const modifyAssignment = async (req, res) => {
   const { id } = req.params;
   const { profesorId, rol, alumnoId } = req.body;
   const connection = await createConnection();
-  console.log(req.body)
   try {
-     const [rev] = await connection.execute(
-      "SELECT * FROM asignaciones_profesores WHERE alumno_RUT = ?",
-      [alumnoId]
-    );
-    for (const element of rev) {
-      if (element.profesor_id === profesorId && element.rol === rol) {
-        await connection.end();
-        return res.status(500).json({ message: "No se puede asignar a un mismo profesor" });
-      }
-    }
-    
+    await checkForIncompatibleRoles(connection, alumnoId, profesorId, rol, id);
+
+    // Proceed with updating the assignment if no incompatible roles found
     const [results] = await connection.execute(
       "UPDATE asignaciones_profesores SET profesor_id = ?, rol = ? WHERE asignacion_id = ?",
       [profesorId, rol, id]
     );
-    res.status(200).json({ message: "Asignación modificada con éxito." });
+
+    await connection.end();
+    res.status(200).json({ message: "Assignment modified successfully.", data: results });
   } catch (error) {
-    console.log(error);
-    res
-      .status(500)
-      .json({
-        message: "Error al modificar la asignación.",
-        error: error.message,
-      });
+    await connection.end();
+    res.status(500).json({ message: "Error modifying the assignment.", error: error.message });
   }
 };
-
 export const deleteAssignment = async (req, res) => {
   const { id } = req.params;
   const connection = await createConnection();
+  
   try {
-    const [results] = await connection.execute(
-      "DELETE FROM asignaciones_profesores WHERE `asignaciones_profesores`.`asignacion_id` = ?",
+    const [assignment] = await connection.execute(
+      "SELECT rol FROM asignaciones_profesores WHERE asignacion_id = ?",
       [id]
     );
+
+    // Si el rol es presidente o secretario, actualizar la tabla alumnos
+    if (assignment.rol === "presidente" || assignment.rol === "secretario") {
+      const columnToUpdate = assignment.rol === "presidente" ? "id_presidente" : "id_secretario";
+      await connection.execute(
+        `UPDATE alumnos SET ${columnToUpdate} = NULL WHERE ${columnToUpdate} = ?`,
+        [id]
+      );
+    }
+    
+    // Eliminar la asignación
+    await connection.execute(
+      "DELETE FROM asignaciones_profesores WHERE asignacion_id = ?",
+      [id]
+    );
+
     res.status(200).json({ message: "Asignación eliminada con éxito." });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        message: "Error al eliminar la asignación.",
-        error: error.message,
-      });
+    // ... manejo de errores ...
   }
 };
 
+
 export const assignProfessorToStudent = async (req, res) => {
-  const connection = await createConnection();
   const { alumnoId, profesorId, rol } = req.body;
-  console.log(alumnoId, profesorId, rol);
+  const connection = await createConnection();
+
   try {
-    //Ese alumno ya fue asignado a ese profesor
-    const [rev] = await connection.execute(
-      "SELECT * FROM asignaciones_profesores WHERE alumno_RUT = ? AND profesor_id = ? ",
-      [alumnoId, profesorId]
-    );
+    await connection.beginTransaction();
 
-    console.log(rev);
-    if (rev[0]) {
-      return res.status(409).json({
-        message: "El alumno ya fue asignado a ese profesor.",
-        data: rev,
-      });
-    }
+    // Check for incompatible roles before inserting a new assignment
+    await checkForIncompatibleRoles(connection, alumnoId, profesorId, rol);
 
-    const [results] = await connection.execute(
+    // Insert the new assignment
+    const [result] = await connection.execute(
       "INSERT INTO asignaciones_profesores (alumno_RUT, profesor_id, rol) VALUES (?, ?, ?)",
-      
       [alumnoId, profesorId, rol]
     );
-      const[notas] = await connection.execute(
-        "INSERT INTO notas(alumno_RUT) VALUES (?)",
-         [alumnoId]
-      )
-    res
-      .status(201)
-      .json({ message: "Asignación creada con éxito.", data: results });
+
+    await connection.commit(); // Commit the transaction if everything is fine
+    await connection.end();
+    res.status(201).json({ message: "Assignment created successfully.", data: result });
   } catch (error) {
-    if (connection) await connection.end();
-    res
-      .status(500)
-      .json({ message: "Error al crear la asignación.", error: error.message });
-  } finally {
-    if (connection) await connection.end();
+    await connection.rollback(); // Roll back the transaction in case of an error
+    await connection.end();
+    res.status(500).json({ message: "Error creating the assignment.", error: error.message });
   }
 };
 
 // Obtener todas las asignaciones de un alumno
 export const getAssignmentsByStudent = async (req, res) => {
   const { alumnoId } = req.params;
+  let connection;
   try {
-    const connection = await createConnection();
+    connection = await createConnection();
     const [results] = await connection.query(
       "SELECT * FROM asignaciones_profesores WHERE alumno_RUT = ?",
       [alumnoId]
@@ -117,6 +127,7 @@ export const getAssignmentsByStudent = async (req, res) => {
     });
   }
 };
+
 export const getGuiaAssignmentsByProfessor = async (req, res) => {
   const { profesorId } = req.params;
   const connection = await createConnection();
@@ -156,10 +167,11 @@ export const getInformanteAssignmentsByProfessor = async (req, res) => {
 };
 
 export const getAllAssignments = async (req, res) => {
+  let connection;
   try {
-    const connection = await createConnection();
+    connection = await createConnection();
     const [results] = await connection.query(
-      "SELECT asi.profesor_id, asi.asignacion_id, a.nombre as alumno_nombre, a.rut as alumno_RUT, p.nombre as nombre_profesor, asi.rol FROM alumnos as a INNER JOIN asignaciones_profesores as asi ON a.RUT = asi.alumno_RUT INNER JOIN profesores as p ON asi.profesor_id = p.profesor_id;        "
+      "SELECT asi.profesor_id, asi.asignacion_id, a.nombre as alumno_nombre, a.rut as alumno_RUT, p.nombre as nombre_profesor, asi.rol FROM alumnos as a INNER JOIN asignaciones_profesores as asi ON a.RUT = asi.alumno_RUT INNER JOIN profesores as p ON asi.profesor_id = p.profesor_id;"
     );
     await connection.end();
     res.status(200).json(results);
@@ -171,4 +183,4 @@ export const getAllAssignments = async (req, res) => {
     });
   }
 };
-/* SELECT asi.asignacion_id, a.nombre, p.nombre, asi.rol FROM alumnos as a INNER JOIN asignaciones_profesores as asi ON a.RUT = asi.alumno_RUT INNER JOIN profesores as p ON asi.profesor_id = p.profesor_id; */
+
