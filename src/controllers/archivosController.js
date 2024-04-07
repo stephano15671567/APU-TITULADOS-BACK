@@ -231,3 +231,38 @@ export const generarYDescargarActa = async (req, res) => {
     res.status(500).send('Error al generar el acta');
   }
 };
+
+export const subirTesis = async (req, res) => {
+  if (!req.files || !req.files.tesis) {
+    return res.status(400).send({ message: "No se ha subido ningún archivo." });
+  }
+
+  const tesis = req.files.tesis;
+  const alumnoRUT = req.params.rut; // Asegúrate de que el parámetro en la ruta sea 'rut'
+  const uploadPath = path.join(__dirname, '../public/tesis', `${alumnoRUT}.docx`);
+
+  tesis.mv(uploadPath, (err) => {
+    if (err) {
+      console.error('Error al subir la tesis:', err);
+      return res.status(500).send({ message: "No se ha podido subir la tesis" });
+    }
+    res.send({ message: "La tesis ha sido subida correctamente." });
+  });
+};
+
+export const descargarTesis = async (req, res) => {
+  const filePath = path.join(__dirname, '../public/tesis', `${req.params.rut}.docx`);
+  if (fs.existsSync(filePath)) {
+    res.download(filePath, `Tesis_${req.params.rut}.docx`, (err) => {
+      if (err) {
+        res.status(500).send({
+          message: "No se pudo descargar la tesis. " + err,
+        });
+      }
+    });
+  } else {
+    res.status(404).send({
+      message: "Tesis no encontrada."
+    });
+  }
+};

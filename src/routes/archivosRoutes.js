@@ -8,7 +8,10 @@ import {
   descargar,
   subirRubricaInformante,
   subirRubricaGuia,
-  generarYDescargarActa
+  generarYDescargarActa,
+  subirTesis,
+  descargarTesis,
+  
 } from '../controllers/archivosController.js';
 const router = express.Router();
 
@@ -22,6 +25,8 @@ router.post('/subir/rubrica/guia/:rut', subirRubricaGuia);
 router.get('/descargar/rubrica/guia/con-notas/:rut', descargarRubricaGuiaConNotas);
 router.get('/descargar/rubrica/informante/con-notas/:rut', descargarRubricaInformanteConNotas);;
 router.get('/descargar/acta/:rut', generarYDescargarActa);
+router.post('/subir/tesis/:rut', subirTesis);
+router.get('/descargar/tesis/:rut', descargarTesis);
 export default router;
 
 
