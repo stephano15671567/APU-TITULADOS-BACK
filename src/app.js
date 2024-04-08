@@ -51,7 +51,6 @@ app.use(
 );
 app.use('/api/report', reportRoutes);
 app.use('/api/notas', notasRoutes);
-//endpoints
 app.use('/upload', uploadRoutes);
 app.use('/api/profesores', profesoresRoutes);
 app.use('/api/alumnos', alumnosRoutes);
