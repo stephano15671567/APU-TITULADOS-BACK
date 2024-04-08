@@ -30,7 +30,12 @@ export const generateReport = async (req, res) => {
   p_guia.nombre AS 'Profesor Guía',
   p_informante.nombre AS 'Profesor Informante',
   p_secretario.nombre AS 'Secretario',
-  p_presidente.nombre AS 'Presidente'
+  p_presidente.nombre AS 'Presidente',
+  notas.nota_guia AS 'Nota Guía',
+  notas.nota_informante AS 'Nota Informante',
+  notas.nota_tesis AS 'Promedio (Nota Tesis)',
+  notas.nota_examen_oral AS 'N.EX:ORAL',
+  notas.nota_final AS 'Nota Final'
 FROM alumnos
 LEFT JOIN asignaciones_profesores AS asig_guia ON alumnos.RUT = asig_guia.alumno_RUT AND asig_guia.rol = 'guia'
 LEFT JOIN profesores AS p_guia ON asig_guia.profesor_id = p_guia.profesor_id
@@ -39,7 +44,8 @@ LEFT JOIN profesores AS p_informante ON asig_informante.profesor_id = p_informan
 LEFT JOIN asignaciones_profesores AS asig_secretario ON alumnos.RUT = asig_secretario.alumno_RUT AND asig_secretario.rol = 'secretario'
 LEFT JOIN profesores AS p_secretario ON asig_secretario.profesor_id = p_secretario.profesor_id
 LEFT JOIN asignaciones_profesores AS asig_presidente ON alumnos.RUT = asig_presidente.alumno_RUT AND asig_presidente.rol = 'presidente'
-LEFT JOIN profesores AS p_presidente ON asig_presidente.profesor_id = p_presidente.profesor_id;
+LEFT JOIN profesores AS p_presidente ON asig_presidente.profesor_id = p_presidente.profesor_id
+LEFT JOIN notas ON alumnos.RUT = notas.alumno_RUT;
           `);
 
     // Close the database connection
@@ -61,7 +67,13 @@ LEFT JOIN profesores AS p_presidente ON asig_presidente.profesor_id = p_presiden
         { value: 'Profesor Guía', fontWeight: 'bold', fontColor: 'FFFFFF', fill: '4286f4' },
         { value: 'Profesor Informante', fontWeight: 'bold', fontColor: 'FFFFFF', fill: '4286f4' },
         { value: 'Secretario', fontWeight: 'bold', fontColor: 'FFFFFF', fill: '4286f4' },
-        { value: 'Presidente', fontWeight: 'bold', fontColor: 'FFFFFF', fill: '4286f4' }
+        { value: 'Presidente', fontWeight: 'bold', fontColor: 'FFFFFF', fill: '4286f4' },
+        { value: 'Tesis', fontWeight: 'bold', fontColor: 'FFFFFF', fill: '4286f4' },
+        { value: 'Nota Guía', fontWeight: 'bold', fontColor: 'FFFFFF', fill: '4286f4' },
+        { value: 'Nota Informante', fontWeight: 'bold', fontColor: 'FFFFFF', fill: '4286f4' },
+        { value: 'Promedio (Nota Tesis)', fontWeight: 'bold', fontColor: 'FFFFFF', fill: '4286f4' },
+        { value: 'N.EX:ORAL', fontWeight: 'bold', fontColor: 'FFFFFF', fill: '4286f4' },
+        { value: 'Nota Final', fontWeight: 'bold', fontColor: 'FFFFFF', fill: '4286f4' }
       ],
       // Student data with their guide and informant professors
       ...results.map(row => [
@@ -77,7 +89,13 @@ LEFT JOIN profesores AS p_presidente ON asig_presidente.profesor_id = p_presiden
         { value: row['Profesor Guía'] },
         { value: row['Profesor Informante'] },
         { value: row.Secretario },
-        { value: row.Presidente }
+        { value: row.Presidente },
+        { value: row.Tesis },
+        { value: row['Nota Guía'] },
+        { value: row['Nota Informante'] },
+        { value: row['Promedio (Nota Tesis)'] },
+        { value: row['N.EX:ORAL'] },
+        { value: row['Nota Final'] }
       ])
     ];
 
@@ -100,7 +118,13 @@ LEFT JOIN profesores AS p_presidente ON asig_presidente.profesor_id = p_presiden
         { width: 25 }, // Profesor Guía
         { width: 25 }, // Profesor Informante
         { width: 25 }, // Secretario
-        { width: 25 }  // Presidente
+        { width: 25 },  // Presidente
+        { width: 20 }, // Tesis
+        { width: 15 }, // Nota Guía
+        { width: 15 }, // Nota Informante
+        { width: 20 }, // Promedio (Nota Tesis)
+        { width: 15 }, // N.EX:ORAL
+        { width: 15 }  // Nota Final
       ],
       rows: [{ height: 30 }, ...Array(data.length - 1).fill({ height: 25 })], // Set row height
       border: 'thin' // Set border thickness
