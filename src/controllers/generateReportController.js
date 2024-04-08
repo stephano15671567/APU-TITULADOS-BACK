@@ -18,25 +18,29 @@ export const generateReport = async (req, res) => {
     // Perform JOIN query to fetch student data with their corresponding guide and informant professors
     const [results] = await connection.query(`
       SELECT
-        alumnos.nombre AS Alumno,
-        alumnos.RUT AS RUT,
-        alumnos.CODIGO AS Codigo,
-        alumnos.ANO_INGRESO AS 'Año Ingreso',
-        alumnos.ANO_EGRESO AS 'Año Egreso',
-        alumnos.n_resolucion AS 'Número Resolución',
-        alumnos.fecha_examen AS 'Fecha Examen',
-        alumnos.hora AS Hora,
-        alumnos.mail AS Email,
-        alumnos.secretario AS Secretario,
-        alumnos.presidente AS Presidente,
-        p_guia.nombre AS 'Profesor Guía',
-        p_informante.nombre AS 'Profesor Informante'
-      FROM alumnos
-      LEFT JOIN asignaciones_profesores AS asig_guia ON alumnos.RUT = asig_guia.alumno_RUT AND asig_guia.rol = 'guia'
-      LEFT JOIN profesores AS p_guia ON asig_guia.profesor_id = p_guia.profesor_id
-      LEFT JOIN asignaciones_profesores AS asig_informante ON alumnos.RUT = asig_informante.alumno_RUT AND asig_informante.rol = 'informante'
-      LEFT JOIN profesores AS p_informante ON asig_informante.profesor_id = p_informante.profesor_id;
-    `);
+  alumnos.nombre AS Alumno,
+  alumnos.RUT AS RUT,
+  alumnos.CODIGO AS Codigo,
+  alumnos.ANO_INGRESO AS 'Año Ingreso',
+  alumnos.ANO_EGRESO AS 'Año Egreso',
+  alumnos.n_resolucion AS 'Número Resolución',
+  alumnos.fecha_examen AS 'Fecha Examen',
+  alumnos.hora AS Hora,
+  alumnos.mail AS Email,
+  p_guia.nombre AS 'Profesor Guía',
+  p_informante.nombre AS 'Profesor Informante',
+  p_secretario.nombre AS 'Secretario',
+  p_presidente.nombre AS 'Presidente'
+FROM alumnos
+LEFT JOIN asignaciones_profesores AS asig_guia ON alumnos.RUT = asig_guia.alumno_RUT AND asig_guia.rol = 'guia'
+LEFT JOIN profesores AS p_guia ON asig_guia.profesor_id = p_guia.profesor_id
+LEFT JOIN asignaciones_profesores AS asig_informante ON alumnos.RUT = asig_informante.alumno_RUT AND asig_informante.rol = 'informante'
+LEFT JOIN profesores AS p_informante ON asig_informante.profesor_id = p_informante.profesor_id
+LEFT JOIN asignaciones_profesores AS asig_secretario ON alumnos.RUT = asig_secretario.alumno_RUT AND asig_secretario.rol = 'secretario'
+LEFT JOIN profesores AS p_secretario ON asig_secretario.profesor_id = p_secretario.profesor_id
+LEFT JOIN asignaciones_profesores AS asig_presidente ON alumnos.RUT = asig_presidente.alumno_RUT AND asig_presidente.rol = 'presidente'
+LEFT JOIN profesores AS p_presidente ON asig_presidente.profesor_id = p_presidente.profesor_id;
+          `);
 
     // Close the database connection
     await connection.end();
