@@ -8,16 +8,16 @@ import { info } from "console";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const correo_SST = "maximiliano.aguirre@alumnos.uv.cl";
+const correo_SST = "titulacionapu@uv.cl";
 
 const createConnection = async () => {
   return await mysql2.createConnection(db);
 };
-const user = "";
-const pass = "";
+const user = "titulacionapu@uv.cl";
+const pass = "Escapu2024";
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
-  port: 465,
+  port: 587,
   secure: true,
   auth: {
     user: `${user}`,
@@ -30,7 +30,7 @@ export const mail = async (req, res) => {
   console.log(rut);
   try {
     const info = await transporter.sendMail({
-      from: ' "Futuro sistema de seminario de prácticas UV" <maximiliano.aguirre@alumnos.uv.cl>',
+      from: ' "Futuro sistema de seminario de prácticas UV" <titulacionapu@uv.cl>',
       to: `${correo_SST}`,
       subject: "Testing",
       text: "Testing",
