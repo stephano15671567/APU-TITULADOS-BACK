@@ -5,6 +5,7 @@ import values from "../const/const.js";
 database. It includes the following properties: */
 const connectionConfig = {
   host: values.HOST,
+  port: values.PORT,
   user: values.USER,
   password: values.PASSWORD,
   database: values.DATABASE,
@@ -13,6 +14,7 @@ const connectionConfig = {
 
 const connection = mysql2.createConnection({
   host: connectionConfig.host,
+  port: connectionConfig.port,
   user: connectionConfig.user,
   password: connectionConfig.password,
 });

@@ -9,6 +9,7 @@ const STATIC_PATH = process.env.STATIC_PATH;
 
 // BD
 const HOST = process.env.HOST;
+const PORT = process.env.PORT
 const USER = process.env.USER;
 const DATABASE = process.env.DATABASE;
 const PASSWORD = process.env.PASSWORD;
@@ -18,6 +19,7 @@ const PASSWORD = process.env.PASSWORD;
 variables using `process.env`. */
 const object = {
     HOST,
+    PORT,
     USER,
     SECRET,
     NODE_ENV,
