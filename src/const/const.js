@@ -8,9 +8,9 @@ const NODE_ENV = process.env.NODE_ENV;
 const STATIC_PATH = process.env.STATIC_PATH;
 
 // BD
-const HOST = process.env.HOST;
+const HOST = process.env.HOSTMYSQL;
 const PORT = process.env.PORT
-const USER = process.env.USER;
+const USER = process.env.USERMYSQL;
 const DATABASE = process.env.DATABASE;
 const PASSWORD = process.env.PASSWORD;
 
