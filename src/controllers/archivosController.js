@@ -6,7 +6,6 @@ import fs from 'fs';
 import PizZip from 'pizzip';
 import Docxtemplater from 'docxtemplater';
 
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -82,20 +81,6 @@ export const subirArchivo = async (req, res) => {
     }
   });
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 export const subirRubricaInformante = async (req, res) => {
@@ -263,6 +248,23 @@ export const descargarTesis = async (req, res) => {
   } else {
     res.status(404).send({
       message: "Tesis no encontrada."
+    });
+  }
+};
+
+export const descargarArchivoWord = async (req, res) => {
+  const filePath = path.join(__dirname, '../public/ficha_alumno', 'archivo_word.docx');
+  if (fs.existsSync(filePath)) {
+    res.download(filePath, 'archivo_word.docx', (err) => {
+      if (err) {
+        res.status(500).send({
+          message: "No se pudo descargar el archivo. " + err,
+        });
+      }
+    });
+  } else {
+    res.status(404).send({
+      message: "Archivo no encontrado."
     });
   }
 };

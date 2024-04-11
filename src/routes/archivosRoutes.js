@@ -11,6 +11,7 @@ import {
   generarYDescargarActa,
   subirTesis,
   descargarTesis,
+  descargarArchivoWord,
   
 } from '../controllers/archivosController.js';
 const router = express.Router();
@@ -27,6 +28,7 @@ router.get('/descargar/rubrica/informante/con-notas/:rut', descargarRubricaInfor
 router.get('/descargar/acta/:rut', generarYDescargarActa);
 router.post('/subir/tesis/:rut', subirTesis);
 router.get('/descargar/tesis/:rut', descargarTesis);
+router.get('/descargar/archivo-word', descargarArchivoWord);
 export default router;
 
 
