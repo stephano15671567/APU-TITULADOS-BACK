@@ -17,7 +17,7 @@ const user = "titulacionapu@uv.cl";
 const pass = "Escapu2024";
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
-  port: 587,
+  port: 465,
   secure: true,
   auth: {
     user: `${user}`,
@@ -55,6 +55,7 @@ export const mail = async (req, res) => {
 
 export const notification = async (req, res) => {
   try {
+    console.log(req.params)
     const connection = await createConnection();
     const [results] = await connection.query(
       "SELECT p.mail, asi.profesor_id, asi.asignacion_id, a.nombre as alumno_nombre, a.rut as alumno_RUT, p.nombre as nombre_profesor, asi.rol FROM alumnos as a INNER JOIN asignaciones_profesores as asi ON a.RUT = asi.alumno_RUT INNER JOIN profesores as p ON asi.profesor_id = p.profesor_id WHERE asignacion_id = ?;",
