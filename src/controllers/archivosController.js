@@ -255,7 +255,7 @@ export const descargarTesis = async (req, res) => {
 export const descargarArchivoWord = async (req, res) => {
   const filePath = path.join(__dirname, '../public/ficha_alumno', 'Formulario Inscripción Seminario de Título V2.docx');
   if (fs.existsSync(filePath)) {
-    res.download(filePath, 'archivo_word.docx', (err) => {
+    res.download(filePath, 'Formulario Inscripción Seminario de Título V2.docx', (err) => {
       if (err) {
         res.status(500).send({
           message: "No se pudo descargar el archivo. " + err,
