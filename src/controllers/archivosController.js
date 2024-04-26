@@ -70,7 +70,7 @@ export const subirArchivo = async (req, res) => {
   
   let file = req.files.file;
   const name = req.params.id; 
-  let uploadPath = path.join(__dirname, '../public/fichas_tesis', `${name}.docx`);
+  let uploadPath = path.join(__dirname, '../public/fichas_tesis', `${name}.word`);
 
   file.mv(uploadPath, (err) => {
     if (err) {

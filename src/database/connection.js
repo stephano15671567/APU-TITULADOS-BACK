@@ -4,7 +4,7 @@ import values from "../const/const.js";
 /* The `connectionConfig` object is storing the configuration details for connecting to a MySQL
 database. It includes the following properties: */
 const connectionConfig = {
-  host: values.HOST,
+  host: values.HOSTMYSQL,
   port: values.PORT,
   user: values.USER,
   password: values.PASSWORD,
