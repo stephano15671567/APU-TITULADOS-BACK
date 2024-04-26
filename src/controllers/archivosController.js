@@ -70,7 +70,7 @@ export const subirArchivo = async (req, res) => {
   
   let file = req.files.file;
   const name = req.params.id; 
-  let uploadPath = path.join(__dirname, '../public/fichas_tesis', `${name}.word`);
+  let uploadPath = path.join(__dirname, '../public/fichas_tesis', `${name}.docx`);
 
   file.mv(uploadPath, (err) => {
     if (err) {
@@ -253,7 +253,8 @@ export const descargarTesis = async (req, res) => {
 };
 
 export const descargarArchivoWord = async (req, res) => {
-  const filePath = path.join(__dirname, '../public/ficha_alumno', 'Formulario Inscripción Seminario de Título V2.docx');
+  const filePath = path.join(__dirname, '../public/ficha_alumno', 'ficha.docx');
+  console.log(filePath)
   if (fs.existsSync(filePath)) {
     res.download(filePath, 'Formulario Inscripción Seminario de Título V2.docx', (err) => {
       if (err) {
