@@ -253,7 +253,7 @@ export const descargarTesis = async (req, res) => {
 };
 
 export const descargarArchivoWord = async (req, res) => {
-  const filePath = path.join(__dirname, '../public/ficha_alumno', 'archivo_word.docx');
+  const filePath = path.join(__dirname, '../public/ficha_alumno', 'Formulario Inscripción Seminario de Título V2.docx');
   if (fs.existsSync(filePath)) {
     res.download(filePath, 'archivo_word.docx', (err) => {
       if (err) {

@@ -8,7 +8,7 @@ const NODE_ENV = process.env.NODE_ENV;
 const STATIC_PATH = process.env.STATIC_PATH;
 
 // BD
-const HOST = process.env.HOSTMYSQL;
+const localhost = process.env.HOSTMYSQL;
 const PORT = process.env.PORT
 const USER = process.env.USERMYSQL;
 const DATABASE = process.env.DATABASE;
@@ -18,7 +18,7 @@ const PASSWORD = process.env.PASSWORD;
 `SECRET`, `NODE_ENV`, `RUN_PORT`, and `STATIC_PATH`. These constants are obtained from environment
 variables using `process.env`. */
 const object = {
-    HOST,
+    localhost,
     PORT,
     USER,
     SECRET,

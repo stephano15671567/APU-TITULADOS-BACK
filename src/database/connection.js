@@ -18,7 +18,7 @@ const connection = mysql2.createConnection({
   user: connectionConfig.user,
   password: connectionConfig.password,
 });
-console.log(connection)
+
 
 /* The code `connection.query(`CREATE DATABASE IF NOT EXISTS ${connectionConfig.database}`, (error) =>
 { ... })` is executing a SQL query to create a database if it does not already exist. */
