@@ -30,9 +30,9 @@ export const descargar = async (req, res) => {
 };
 
 export const descargarRubricaGuía = async (req, res) => {
-  const filePath = path.join(__dirname, '../public/rubricas/Guía', `FORMATO PROFESOR GUÍA.xlsx`);
+  const filePath = path.join(__dirname, '../public/rubricas/guia', `guia.xlsx`);
   if (fs.existsSync(filePath)) {
-    res.download(filePath, `FORMATO PROFESOR GUÍA.xlsx`, (err) => {
+    res.download(filePath, `guia.xlsx`, (err) => {
       if (err) {
         res.status(500).send({
           message: "No se pudo descargar el archivo. " + err,
