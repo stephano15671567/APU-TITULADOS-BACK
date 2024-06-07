@@ -3,9 +3,6 @@ import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
 import session from 'express-session';
-import fs from 'fs';
-import https from 'https'; // Import HTTPS module
-import value from './const/const.js';
 import fileUpload from 'express-fileupload';
 import uploadRoutes from './routes/uploadRoutes.js';
 import profesoresRoutes from './routes/profesoresRoutes.js';
@@ -16,6 +13,7 @@ import notasRoutes from './routes/notasRoutes.js';
 import archivosRoutes from './routes/archivosRoutes.js';
 import correosRoutes from './routes/correosRoutes.js';
 import reportRoutes from './routes/reportRoutes.js';
+import value from './const/const.js';
 
 const app = express();
 
@@ -27,12 +25,6 @@ const corsOptions = {
     "https://titulados.administracionpublica-uv.cl",
     "http://localhost:3000",
   ],
-};
-
-// HTTPS options - Path to SSL certificate and key
-const options = {
-  key: fs.readFileSync('src/certificates/key.pem'),
-  cert: fs.readFileSync('src/certificates/cert.pem')
 };
 
 app.set("env", value.NODE_ENV);
@@ -66,5 +58,5 @@ app.get('/', (req, res) => {
   res.send('Hello World!');
 });
 
-// Export app and https options for use in index.js
-export { app, options };
+// Export app for use in index.js
+export { app };

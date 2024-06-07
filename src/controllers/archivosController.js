@@ -123,10 +123,8 @@ export const subirRubricaGuia = async (req, res) => {
 
 export const descargarRubricaGuiaConNotas = async (req, res) => {
   const rut = req.params.rut;
-  const nombre = req.params.nombre; // Asume que este parámetro es enviado en la ruta
-
-  const filePath = path.join(__dirname, '../public/rubricas/Guia2', `${rut}_${nombre}.xlsx`);
-  const filename = `Rubrica_Guia_Con_Notas_${rut}_${nombre}.xlsx`; // Utiliza ambos, RUT y nombre, en el nombre del archivo de descarga
+  const filePath = path.join(__dirname, '../public/rubricas/Guia2', `${rut}.xlsx`);
+  const filename = `Rubrica_Guia_Con_Notas_${rut}.xlsx`; // Utiliza ambos, RUT y nombre, en el nombre del archivo de descarga
 
   if (fs.existsSync(filePath)) {
     res.download(filePath, filename, (err) => {
@@ -147,10 +145,9 @@ export const descargarRubricaGuiaConNotas = async (req, res) => {
 
 export const descargarRubricaInformanteConNotas = async (req, res) => {
   const rut = req.params.rut;
-  const nombre = req.params.nombre; // Asegúrate de que se recibe este parámetro como parte de la solicitud
 
-  const filePath = path.join(__dirname, '../public/rubricas/Informante2', `${rut}_${nombre}.xlsx`);
-  const filename = `Rubrica_Informante_Con_Notas_${rut}_${nombre}.xlsx`; // Incluye ambos, RUT y nombre, en el nombre del archivo final
+  const filePath = path.join(__dirname, '../public/rubricas/Informante2', `${rut}.xlsx`);
+  const filename = `Rubrica_Informante_Con_Notas_${rut}.xlsx`; // Incluye ambos, RUT y nombre, en el nombre del archivo final
 
   if (fs.existsSync(filePath)) {
     res.download(filePath, filename, (err) => {
@@ -273,6 +270,27 @@ export const descargarArchivoWord = async (req, res) => {
   if (fs.existsSync(filePath)) {
     res.download(filePath, 'archivo_word.docx', (err) => {
       if (err) {
+        res.status(500).send({
+          message: "No se pudo descargar el archivo. " + err,
+        });
+      }
+    });
+  } else {
+    res.status(404).send({
+      message: "Archivo no encontrado."
+    });
+  }
+};
+
+export const descargarFicha = async (req, res) => {
+  const rut = req.params.rut;
+  const filePath = path.join(__dirname, '../public/fichas_tesis', `${rut}.xlsx`);
+  const filename = `Ficha_tesis_${rut}.xlsx`; 
+
+  if (fs.existsSync(filePath)) {
+    res.download(filePath, filename, (err) => {
+      if (err) {
+        console.error('Error al descargar el archivo:', err);
         res.status(500).send({
           message: "No se pudo descargar el archivo. " + err,
         });
