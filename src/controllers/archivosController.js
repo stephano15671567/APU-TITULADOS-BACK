@@ -286,7 +286,7 @@ export const descargarFicha = async (req, res) => {
   const rut = req.params.rut;
   const filePath = path.join(__dirname, '../public/fichas_tesis', `${rut}.docx`);
   console.log(filePath)
-  const filename = `Ficha_tesis_${rut}.xlsx`; 
+  const filename = `Ficha_tesis_${rut}.docx`; 
 
   if (fs.existsSync(filePath)) {
     res.download(filePath, filename, (err) => {
