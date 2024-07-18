@@ -1,4 +1,3 @@
-import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
@@ -58,5 +57,4 @@ app.get('/', (req, res) => {
   res.send('Hello World!');
 });
 
-// Export app for use in index.js
 export { app };

@@ -142,6 +142,20 @@ export const descargarRubricaGuiaConNotas = async (req, res) => {
   }
 };
 
+export const verificarArchivosAlumno = async (req, res) => {
+  const rut = req.params.rut;
+  
+  const archivos = {
+    ficha: fs.existsSync(path.join(__dirname, '../public/fichas_tesis', `${rut}.docx`)) ? 1 : 0,
+    tesis: fs.existsSync(path.join(__dirname, '../public/tesis', `${rut}.docx`)) ? 1 : 0,
+    acta: fs.existsSync(path.join(__dirname, '../public/Acta', `${rut}.docx`)) ? 1 : 0,
+    guia: fs.existsSync(path.join(__dirname, '../public/rubricas/Guia2', `${rut}.xlsx`)) ? 1 : 0,
+    informante: fs.existsSync(path.join(__dirname, '../public/rubricas/Informante2', `${rut}.xlsx`)) ? 1 : 0,
+    
+  };
+
+  res.json(archivos);
+};
 
 export const descargarRubricaInformanteConNotas = async (req, res) => {
   const rut = req.params.rut;
