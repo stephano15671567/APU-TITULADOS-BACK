@@ -1,13 +1,77 @@
 import mysql2 from "mysql2/promise";
 import db from "../database/connection.js";
-import path from 'path';
-import { fileURLToPath } from 'url';
-import fs from 'fs';
-import PizZip from 'pizzip';
-import Docxtemplater from 'docxtemplater';
+import path from "path";
+import { fileURLToPath } from "url";
+import fs from "fs";
+import * as nodemailer from "nodemailer";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+const createConnection = async () => {
+  return await mysql2.createConnection(db);
+};
+
+const user = "titulacionapu@uv.cl";
+const pass = "Escapu2024";
+
+const transporter = nodemailer.createTransport({
+  host: "smtp.gmail.com",
+  port: 465,
+  secure: true,
+  auth: {
+    user: `${user}`,
+    pass: `${pass}`,
+  },
+  tls: {
+    rejectUnauthorized: false,
+  },
+});
+
+
+export const subirArchivo = async (req, res) => {
+  if (!req.files || Object.keys(req.files).length === 0) {
+    return res.status(400).send({ message: "No se ha subido ningún archivo" });
+  }
+
+  let file = req.files.file;
+  const name = req.params.id;
+  let uploadPath = path.join(__dirname, '../public/fichas_tesis', `${name}.docx`);
+
+  file.mv(uploadPath, async (err) => {
+    if (err) {
+      console.error('Error al subir el archivo:', err);
+      return res.status(500).send({ message: "No se ha podido subir el archivo" });
+    } else {
+      try {
+        // Enviar notificación por correo a todos los correos de la secretaría
+        const connection = await createConnection();
+        const [results] = await connection.query('SELECT mail FROM secretaria');
+        await connection.end();
+
+        const mailList = results.map(row => row.mail);
+
+        const data = await transporter.sendMail({
+          from: ' "Futuro sistema de seminario de prácticas UV" <titulacionapu@uv.cl>',
+          to: mailList.join(","),
+          subject: "Nueva ficha de inscripción subida",
+          text: `Se ha subido una nueva ficha de inscripción para el alumno con RUT ${name}.`,
+          html: `<h5>Se ha subido una nueva ficha de inscripción para el alumno con RUT ${name}.</h5>`,
+          attachments: [
+            {
+              filename: `Ficha_de_inscripcion-${name}.docx`,
+              path: uploadPath,
+            },
+          ],
+        });
+        res.status(200).send({ message: "Archivo subido con éxito y notificación enviada." });
+      } catch (e) {
+        console.error('Error al enviar la notificación:', e);
+        res.status(500).send({ message: "Archivo subido con éxito, pero no se pudo enviar la notificación." });
+      }
+    }
+  });
+};
 
 export const descargar = async (req, res) => {
   const filePath = path.join(__dirname, '../public/fichas_tesis', `${req.params.rut}.docx`);
@@ -63,24 +127,7 @@ export const descargarRubricaInformante = async (req, res) => {
   }
 };
 
-export const subirArchivo = async (req, res) => {
-  if (!req.files || Object.keys(req.files).length === 0) {
-    return res.status(400).send({ message: "No se ha subido ningún archivo" });
-  }
-  
-  let file = req.files.file;
-  const name = req.params.id; 
-  let uploadPath = path.join(__dirname, '../public/fichas_tesis', `${name}.docx`);
 
-  file.mv(uploadPath, (err) => {
-    if (err) {
-      console.error('Error al subir el archivo:', err);
-      return res.status(500).send({ message: "No se ha podido subir el archivo" });
-    } else {
-      res.status(200).send({ message: "Archivo subido con éxito." });
-    }
-  });
-};
 
 
 export const subirRubricaInformante = async (req, res) => {
