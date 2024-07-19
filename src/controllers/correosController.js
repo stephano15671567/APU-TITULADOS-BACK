@@ -37,8 +37,8 @@ export const mail = async (req, res) => {
       html: "<h5>Nueva ficha!</h5>",
       attachments: [
         {
-          filename: `Ficha_de_inscripcion-${rut}.word`,
-          path: `./src/public/fichas_tesis/${rut}.word`,
+          filename: `Ficha_de_inscripcion-${rut}.docx`,
+          path: `./src/public/fichas_tesis/${rut}.docx`,
         },
       ],
     });
@@ -74,8 +74,8 @@ export const notification = async (req, res) => {
           html: `<h5>Asignación a profesor ${results[0].nombre_profesor} a cargo de la tesis de ${results[0].alumno_nombre} con rol de ${results[0].rol}</h5>`,
           attachments: [
             {
-              filename: `Ficha_de_inscripcion-${results[0].alumno_RUT}.word`,
-              path: `./src/public/fichas_tesis/${results[0].alumno_RUT}.word`,
+              filename: `Ficha_de_inscripcion-${results[0].alumno_RUT}.docx`,
+              path: `./src/public/fichas_tesis/${results[0].alumno_RUT}.docx`,
             },
           ],
         });
