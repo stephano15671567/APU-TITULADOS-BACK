@@ -8,6 +8,10 @@
 # production
 /build
 /src/public/fichas_tesis
+/src/public/tesis
+/src/public/Guia2
+/src/public/Informante2
+
 
 # misc
 .DS_Store
