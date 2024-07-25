@@ -98,18 +98,18 @@ export const createAlumno = async (req, res) => {
     const [results] = await connection.execute(
       "INSERT INTO alumnos (nombre, RUT, CODIGO, ANO_INGRESO, ANO_EGRESO, n_resolucion, hora, fecha_examen, mail, Gtoken, secretario, presidente) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
       [
-        nombre,
+        nombre || null,
         RUT,
-        CODIGO,
-        ANO_INGRESO,
-        ANO_EGRESO,
-        n_resolucion,
-        hora,
-        fecha_examen,
+        CODIGO || null,
+        ANO_INGRESO || null,
+        ANO_EGRESO || null,
+        n_resolucion || null,
+        hora || null,
+        fecha_examen || null,
         mail,
-        Gtoken,
-        secretario,
-        presidente,
+        Gtoken || null,
+        secretario || null,
+        presidente || null,
       ]
     );
     await connection.end();
@@ -134,7 +134,6 @@ export const getAllAlumnos = async (req, res) => {
   }
 };
 
-// Actualizar un alumno
 export const updateAlumno = async (req, res) => {
   const { RUT } = req.params;
   const {
@@ -178,6 +177,9 @@ export const updateAlumno = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+
+
 
 // Eliminar un alumno
 export const deleteAlumno = async (req, res) => {
