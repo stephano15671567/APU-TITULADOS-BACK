@@ -34,19 +34,15 @@ export const getNotasAlumno = async (req, res) => {
   }
 };
 
-
-
-
-
-
 // Crear o actualizar una nota
 export const upsertNota = async (req, res) => {
   const { alumno_RUT, profesor_id, nota, rol } = req.body;
   try {
     const connection = await createConnection();
-    const notaField = rol === 'guia' ? 'nota_guia' : 'nota_informante';
-
-    // This assumes that there's a relationship between the notas and asignaciones_profesores tables
+    const notaField = rol === "guia" ? "nota_guia" : "nota_informante";
+    const parsedNota = parseFloat(nota).toFixed(2);
+    console.log(alumno_RUT, parsedNota)
+    // Ensure proper formatting and parameter passing for the SELECT query
     const [existing] = await connection.execute(
       `SELECT n.nota_id
        FROM notas n
@@ -59,21 +55,23 @@ export const upsertNota = async (req, res) => {
       // Update the existing note
       await connection.execute(
         `UPDATE notas SET ${notaField} = ? WHERE nota_id = ?`,
-        [nota, existing[0].nota_id]
+        [parsedNota, existing[0].nota_id]
       );
     } else {
       // Insert a new note if necessary
-      // You'll need the appropriate INSERT statement here
+      await connection.execute(
+        `INSERT INTO notas (alumno_RUT, ${notaField}) VALUES (?, ?)`,
+        [alumno_RUT, parsedNota]
+      );
     }
+
     await connection.end();
     res.status(200).json({ message: "Nota actualizada con éxito" });
   } catch (error) {
+    console.log(error);
     res.status(500).json({ message: error.message });
   }
 };
-
-
-  
 
 // Eliminar una nota
 export const deleteNota = async (req, res) => {
@@ -84,7 +82,9 @@ export const deleteNota = async (req, res) => {
     await connection.end();
     res.status(200).json({ message: "Nota eliminada con éxito" });
   } catch (error) {
-    res.status(500).json({ message: "Error al eliminar la nota: " + error.message });
+    res
+      .status(500)
+      .json({ message: "Error al eliminar la nota: " + error.message });
   }
 };
 
@@ -113,9 +113,8 @@ export const upsertNotaDefensa = async (req, res) => {
     await connection.end();
     res.status(200).json({ message: "Nota de defensa actualizada con éxito" });
   } catch (error) {
-    res.status(500).json({ message: "Error al actualizar la nota de defensa: " + error.message });
+    res.status(500).json({
+      message: "Error al actualizar la nota de defensa: " + error.message,
+    });
   }
 };
-
-
-
