@@ -49,7 +49,7 @@ export const subirArchivo = async (req, res) => {
         const mailList = results.map(row => row.mail);
 
         const data = await transporter.sendMail({
-          from: ' "Futuro sistema de seminario de prácticas UV" <titulacionapu@uv.cl>',
+          from: ' "Futuro sistema de seminario de titulación UV" <titulacionapu@uv.cl>',
           to: mailList.join(","),
           subject: "Nueva ficha de inscripción subida",
           text: `Se ha subido una nueva ficha de inscripción para el alumno con RUT ${name}.`,

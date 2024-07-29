@@ -29,7 +29,7 @@ export const mail = async (req, res) => {
   console.log(rut);
   try {
     const info = await transporter.sendMail({
-      from: ' "Futuro sistema de seminario de prácticas UV" <titulacionapu@uv.cl>',
+      from: ' "Futuro sistema de seminario de titulación UV" <titulacionapu@uv.cl>',
       to: `${correo_SST}`,
       subject: "Testing",
       text: "Testing",
@@ -78,7 +78,7 @@ export const notification = async (req, res) => {
       }
 
       const info = await transporter.sendMail({
-        from: ` "Futuro sistema de seminario de prácticas UV" <${correo_SST}>`,
+        from: ` "Futuro sistema de seminario de titulación UV" <${correo_SST}>`,
         to: `${results[0].mail}`,
         subject: "Asignación",
         text: `Asignación con rol de ${results[0].rol}`,
