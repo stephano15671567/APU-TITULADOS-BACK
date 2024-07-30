@@ -288,15 +288,35 @@ export const generarYDescargarActa = async (req, res) => {
   }
 };
 
+
+
 export const subirTesis = async (req, res) => {
   if (!req.files || !req.files.tesis) {
     return res.status(400).send({ message: "No se ha subido ningún archivo." });
   }
 
   const tesis = req.files.tesis;
-  const alumnoRUT = req.params.rut; // Asegúrate de que el parámetro en la ruta sea 'rut'
-  const uploadPath = path.join(__dirname, '../public/tesis', `${alumnoRUT}.docx`);
+  const alumnoRUT = req.params.rut; 
+  const uploadPath = path.join(__dirname, '../public/tesis', `${alumnoRUT}.pdf`);
+  const connection = await createConnection();
+  const [results] = await connection.query('SELECT mail FROM secretaria');
+  const alumno = await connection.query('SELECT nombre FROM alumnos WHERE RUT=?', [alumnoRUT]);
+  const nombre = alumno[0][0].nombre;
+  console.log(nombre);
+  await connection.end();
+  try {
+    const mailList = results.map(row => row.mail);
 
+    const data = await transporter.sendMail({
+      from: ' "Futuro sistema de seminario de titulación UV" <titulacionapu@uv.cl>',
+      to: mailList.join(","),
+      subject: "Nueva tesis subida",
+      text: `Se ha subido una nueva tesis del alumno ${nombre}`,
+      html: `<h5>Se ha subido una nueva tesis para el alumno con rut ${alumnoRUT}, nombre <h4>${nombre}<h4/></h5>`,
+    });
+  } catch (e) {
+    res.status(500).send({ message: "Archivo subido con éxito, pero no se pudo enviar la notificación." });
+  }
   tesis.mv(uploadPath, (err) => {
     if (err) {
       console.error('Error al subir la tesis:', err);
@@ -307,9 +327,9 @@ export const subirTesis = async (req, res) => {
 };
 
 export const descargarTesis = async (req, res) => {
-  const filePath = path.join(__dirname, '../public/tesis', `${req.params.rut}.docx`);
+  const filePath = path.join(__dirname, '../public/tesis', `${req.params.rut}.pdf`);
   if (fs.existsSync(filePath)) {
-    res.download(filePath, `Tesis_${req.params.rut}.docx`, (err) => {
+    res.download(filePath, `Tesis_${req.params.rut}.pdf`, (err) => {
       if (err) {
         res.status(500).send({
           message: "No se pudo descargar la tesis. " + err,
