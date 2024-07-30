@@ -72,8 +72,8 @@ export const notification = async (req, res) => {
 
       if (results[0].rol === "informante") {
         attachments.push({
-          filename: `Tesis-${results[0].alumno_RUT}.docx`,
-          path: path.join(__dirname, '../public/tesis', `${results[0].alumno_RUT}.docx`),
+          filename: `Tesis-${results[0].alumno_RUT}.pdf`,
+          path: path.join(__dirname, '../public/tesis', `${results[0].alumno_RUT}.pdf`),
         });
       }
 
