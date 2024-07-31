@@ -22,9 +22,8 @@ const transporter = nodemailer.createTransport({
   auth: {
     user: `${user}`,
     pass: `${pass}`,
-  }
+  },
 });
-
 
 export const subirArchivo = async (req, res) => {
   if (!req.files || Object.keys(req.files).length === 0) {
@@ -33,20 +32,26 @@ export const subirArchivo = async (req, res) => {
 
   let file = req.files.file;
   const name = req.params.id;
-  let uploadPath = path.join(__dirname, '../public/fichas_tesis', `${name}.docx`);
+  let uploadPath = path.join(
+    __dirname,
+    "../public/fichas_tesis",
+    `${name}.docx`
+  );
 
   file.mv(uploadPath, async (err) => {
     if (err) {
-      console.error('Error al subir el archivo:', err);
-      return res.status(500).send({ message: "No se ha podido subir el archivo" });
+      console.error("Error al subir el archivo:", err);
+      return res
+        .status(500)
+        .send({ message: "No se ha podido subir el archivo" });
     } else {
       try {
         // Enviar notificación por correo a todos los correos de la secretaría
         const connection = await createConnection();
-        const [results] = await connection.query('SELECT mail FROM secretaria');
+        const [results] = await connection.query("SELECT mail FROM secretaria");
         await connection.end();
 
-        const mailList = results.map(row => row.mail);
+        const mailList = results.map((row) => row.mail);
 
         const data = await transporter.sendMail({
           from: ' "Futuro sistema de seminario de titulación UV" <titulacionapu@uv.cl>',
@@ -61,21 +66,34 @@ export const subirArchivo = async (req, res) => {
             },
           ],
         });
-        res.status(200).send({ message: "Archivo subido con éxito y notificación enviada." });
+        res
+          .status(200)
+          .send({
+            message: "Archivo subido con éxito y notificación enviada.",
+          });
       } catch (e) {
-        console.error('Error al enviar la notificación:', e);
-        res.status(500).send({ message: "Archivo subido con éxito, pero no se pudo enviar la notificación." });
+        console.error("Error al enviar la notificación:", e);
+        res
+          .status(500)
+          .send({
+            message:
+              "Archivo subido con éxito, pero no se pudo enviar la notificación.",
+          });
       }
     }
   });
 };
 
 export const descargar = async (req, res) => {
-  const filePath = path.join(__dirname, '../public/fichas_tesis', `${req.params.rut}.docx`);
+  const filePath = path.join(
+    __dirname,
+    "../public/fichas_tesis",
+    `${req.params.rut}.docx`
+  );
   if (fs.existsSync(filePath)) {
     res.download(filePath, (err) => {
       if (err) {
-        console.error('Error al descargar el archivo:', err);
+        console.error("Error al descargar el archivo:", err);
         res.status(500).send({
           message: "No se pudo descargar el archivo. " + err,
         });
@@ -85,13 +103,13 @@ export const descargar = async (req, res) => {
     });
   } else {
     res.status(404).send({
-      message: "Archivo no encontrado."
+      message: "Archivo no encontrado.",
     });
   }
 };
 
 export const descargarRubricaGuía = async (req, res) => {
-  const filePath = path.join(__dirname, '../public/rubricas/guia', `guia.xlsx`);
+  const filePath = path.join(__dirname, "../public/rubricas/guia", `guia.xlsx`);
   if (fs.existsSync(filePath)) {
     res.download(filePath, `guia.xlsx`, (err) => {
       if (err) {
@@ -102,13 +120,17 @@ export const descargarRubricaGuía = async (req, res) => {
     });
   } else {
     res.status(404).send({
-      message: "Archivo no encontrado."
+      message: "Archivo no encontrado.",
     });
   }
 };
 
 export const descargarRubricaInformante = async (req, res) => {
-  const filePath = path.join(__dirname, '../public/rubricas/Informante', `FORMATO PROFESOR INFORMANTE.xlsx`);
+  const filePath = path.join(
+    __dirname,
+    "../public/rubricas/Informante",
+    `FORMATO PROFESOR INFORMANTE.xlsx`
+  );
   if (fs.existsSync(filePath)) {
     res.download(filePath, `FORMATO PROFESOR INFORMANTE.xlsx`, (err) => {
       if (err) {
@@ -119,13 +141,10 @@ export const descargarRubricaInformante = async (req, res) => {
     });
   } else {
     res.status(404).send({
-      message: "Archivo no encontrado."
+      message: "Archivo no encontrado.",
     });
   }
 };
-
-
-
 
 export const subirRubricaInformante = async (req, res) => {
   if (!req.files || !req.files.file) {
@@ -134,14 +153,49 @@ export const subirRubricaInformante = async (req, res) => {
 
   const file = req.files.file;
   const alumnoRUT = req.params.rut;
-  const uploadPath = path.join(__dirname, '../public/rubricas/Informante2', `${alumnoRUT}.xlsx`);
+  const uploadPath = path.join(
+    __dirname,
+    "../public/rubricas/Informante2",
+    `${alumnoRUT}.xlsx`
+  );
+  //Módulo de notificación
+  const connection = await createConnection();
+  const [results] = await connection.query("SELECT mail FROM secretaria");
+  const alumno = await connection.query(
+    "SELECT nombre FROM alumnos WHERE RUT=?",
+    [alumnoRUT]
+  );
+  const nombre = alumno[0][0].nombre;
+  try {
+    const mailList = results.map((row) => row.mail);
+
+    const data = await transporter.sendMail({
+      from: ' "Futuro sistema de seminario de titulación UV" <titulacionapu@uv.cl>',
+      to: mailList.join(","),
+      subject: "Nueva rúbrica de informante súbida",
+      text: `Se ha subido una rúbrica de informante para el alumno: ${nombre}`,
+      html: `<h5>Una nueva rúbrica de informante se ha subido para el alumno rut: ${alumnoRUT}, de nombre <h4>${nombre}<h4/></h5>`,
+    });
+  } catch (e) {
+    res
+      .status(500)
+      .send({
+        message:
+          "Archivo subido con éxito, pero no se pudo enviar la notificación.",
+      });
+  }
+  //Fin módulo de notificación
 
   file.mv(uploadPath, (err) => {
     if (err) {
-      console.error('Error al subir la rúbrica del informante:', err);
-      return res.status(500).send({ message: "No se ha podido subir el archivo" });
+      console.error("Error al subir la rúbrica del informante:", err);
+      return res
+        .status(500)
+        .send({ message: "No se ha podido subir el archivo" });
     }
-    res.send({ message: "La rúbrica del informante ha sido subida correctamente." });
+    res.send({
+      message: "La rúbrica del informante ha sido subida correctamente.",
+    });
   });
 };
 
@@ -153,27 +207,62 @@ export const subirRubricaGuia = async (req, res) => {
 
   const file = req.files.file;
   const alumnoRUT = req.params.rut;
-  const uploadPath = path.join(__dirname, '../public/rubricas/Guia2', `${alumnoRUT}.xlsx`);
+  const uploadPath = path.join(
+    __dirname,
+    "../public/rubricas/Guia2",
+    `${alumnoRUT}.xlsx`
+  );
+  //Módulo de notificación
+  const connection = await createConnection();
+  const [results] = await connection.query("SELECT mail FROM secretaria");
+  const alumno = await connection.query(
+    "SELECT nombre FROM alumnos WHERE RUT=?",
+    [alumnoRUT]
+  );
+  const nombre = alumno[0][0].nombre;
+  try {
+    const mailList = results.map((row) => row.mail);
 
+    const data = await transporter.sendMail({
+      from: ' "Futuro sistema de seminario de titulación UV" <titulacionapu@uv.cl>',
+      to: mailList.join(","),
+      subject: "Nueva rúbrica de guía subida",
+      text: `Se ha subido una rúbrica de guía para el alumno: ${nombre}`,
+      html: `<h5>Una nueva rúbrica de guía se ha subido para el alumno rut: ${alumnoRUT}, de nombre <h4>${nombre}<h4/></h5>`,
+    });
+  } catch (e) {
+    res
+      .status(500)
+      .send({
+        message:
+          "Archivo subido con éxito, pero no se pudo enviar la notificación.",
+      });
+  }
+  //Fin módulo de notificación
   file.mv(uploadPath, (err) => {
     if (err) {
-      console.error('Error al subir la rúbrica del guía:', err);
-      return res.status(500).send({ message: "No se ha podido subir el archivo" });
+      console.error("Error al subir la rúbrica del guía:", err);
+      return res
+        .status(500)
+        .send({ message: "No se ha podido subir el archivo" });
     }
     res.send({ message: "La rúbrica del guía ha sido subida correctamente." });
   });
 };
 
-
 export const descargarRubricaGuiaConNotas = async (req, res) => {
   const rut = req.params.rut;
-  const filePath = path.join(__dirname, '../public/rubricas/Guia2', `${rut}.xlsx`);
+  const filePath = path.join(
+    __dirname,
+    "../public/rubricas/Guia2",
+    `${rut}.xlsx`
+  );
   const filename = `Rubrica_Guia_Con_Notas_${rut}.xlsx`; // Utiliza ambos, RUT y nombre, en el nombre del archivo de descarga
 
   if (fs.existsSync(filePath)) {
     res.download(filePath, filename, (err) => {
       if (err) {
-        console.error('Error al descargar el archivo:', err);
+        console.error("Error al descargar el archivo:", err);
         res.status(500).send({
           message: "No se pudo descargar el archivo. " + err,
         });
@@ -181,21 +270,36 @@ export const descargarRubricaGuiaConNotas = async (req, res) => {
     });
   } else {
     res.status(404).send({
-      message: "Archivo no encontrado."
+      message: "Archivo no encontrado.",
     });
   }
 };
 
 export const verificarArchivosAlumno = async (req, res) => {
   const rut = req.params.rut;
-  
+
   const archivos = {
-    ficha: fs.existsSync(path.join(__dirname, '../public/fichas_tesis', `${rut}.docx`)) ? 1 : 0,
-    tesis: fs.existsSync(path.join(__dirname, '../public/tesis', `${rut}.pdf`)) ? 1 : 0,
-    acta: fs.existsSync(path.join(__dirname, '../public/Acta', `${rut}.docx`)) ? 1 : 0,
-    guia: fs.existsSync(path.join(__dirname, '../public/rubricas/Guia2', `${rut}.xlsx`)) ? 1 : 0,
-    informante: fs.existsSync(path.join(__dirname, '../public/rubricas/Informante2', `${rut}.xlsx`)) ? 1 : 0,
-    
+    ficha: fs.existsSync(
+      path.join(__dirname, "../public/fichas_tesis", `${rut}.docx`)
+    )
+      ? 1
+      : 0,
+    tesis: fs.existsSync(path.join(__dirname, "../public/tesis", `${rut}.pdf`))
+      ? 1
+      : 0,
+    acta: fs.existsSync(path.join(__dirname, "../public/Acta", `${rut}.docx`))
+      ? 1
+      : 0,
+    guia: fs.existsSync(
+      path.join(__dirname, "../public/rubricas/Guia2", `${rut}.xlsx`)
+    )
+      ? 1
+      : 0,
+    informante: fs.existsSync(
+      path.join(__dirname, "../public/rubricas/Informante2", `${rut}.xlsx`)
+    )
+      ? 1
+      : 0,
   };
 
   res.json(archivos);
@@ -204,13 +308,17 @@ export const verificarArchivosAlumno = async (req, res) => {
 export const descargarRubricaInformanteConNotas = async (req, res) => {
   const rut = req.params.rut;
 
-  const filePath = path.join(__dirname, '../public/rubricas/Informante2', `${rut}.xlsx`);
+  const filePath = path.join(
+    __dirname,
+    "../public/rubricas/Informante2",
+    `${rut}.xlsx`
+  );
   const filename = `Rubrica_Informante_Con_Notas_${rut}.xlsx`; // Incluye ambos, RUT y nombre, en el nombre del archivo final
 
   if (fs.existsSync(filePath)) {
     res.download(filePath, filename, (err) => {
       if (err) {
-        console.error('Error al descargar el archivo:', err);
+        console.error("Error al descargar el archivo:", err);
         res.status(500).send({
           message: "No se pudo descargar el archivo. " + err,
         });
@@ -220,7 +328,7 @@ export const descargarRubricaInformanteConNotas = async (req, res) => {
     });
   } else {
     res.status(404).send({
-      message: "Archivo no encontrado."
+      message: "Archivo no encontrado.",
     });
   }
 };
@@ -248,7 +356,7 @@ async function obtenerDatosParaActa(rut) {
   await connection.end();
 
   if (results.length === 0) {
-    throw new Error('No se encontró el alumno con el RUT proporcionado');
+    throw new Error("No se encontró el alumno con el RUT proporcionado");
   }
 
   return results[0];
@@ -260,10 +368,13 @@ export const generarYDescargarActa = async (req, res) => {
   try {
     // Obtener los datos necesarios para llenar la plantilla del acta
     const datosActa = await obtenerDatosParaActa(rut);
-    
+
     // Cargar la plantilla de documento Word (DOCX)
-    const templatePath = path.resolve(__dirname, '../public/Acta/ACTA NOTA FINAL Y DE EXAMEN DE TITULO.docx');
-    const content = fs.readFileSync(templatePath, 'binary');
+    const templatePath = path.resolve(
+      __dirname,
+      "../public/Acta/ACTA NOTA FINAL Y DE EXAMEN DE TITULO.docx"
+    );
+    const content = fs.readFileSync(templatePath, "binary");
     const zip = new PizZip(content);
     const doc = new Docxtemplater(zip, {
       paragraphLoop: true,
@@ -274,21 +385,21 @@ export const generarYDescargarActa = async (req, res) => {
     doc.render(datosActa);
 
     // Generar el documento DOCX
-    const buf = doc.getZip().generate({ type: 'nodebuffer' });
+    const buf = doc.getZip().generate({ type: "nodebuffer" });
 
     // Enviar el documento para su descarga
     const filename = `Acta-${rut}.docx`;
-    res.setHeader('Content-Disposition', 'attachment; filename=' + filename);
-    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+    res.setHeader("Content-Disposition", "attachment; filename=" + filename);
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    );
     res.send(buf);
-
   } catch (error) {
-    console.error('Error al generar el acta:', error);
-    res.status(500).send('Error al generar el acta');
+    console.error("Error al generar el acta:", error);
+    res.status(500).send("Error al generar el acta");
   }
 };
-
-
 
 export const subirTesis = async (req, res) => {
   if (!req.files || !req.files.tesis) {
@@ -296,16 +407,23 @@ export const subirTesis = async (req, res) => {
   }
 
   const tesis = req.files.tesis;
-  const alumnoRUT = req.params.rut; 
-  const uploadPath = path.join(__dirname, '../public/tesis', `${alumnoRUT}.pdf`);
+  const alumnoRUT = req.params.rut;
+  const uploadPath = path.join(
+    __dirname,
+    "../public/tesis",
+    `${alumnoRUT}.pdf`
+  );
   const connection = await createConnection();
-  const [results] = await connection.query('SELECT mail FROM secretaria');
-  const alumno = await connection.query('SELECT nombre FROM alumnos WHERE RUT=?', [alumnoRUT]);
+  const [results] = await connection.query("SELECT mail FROM secretaria");
+  const alumno = await connection.query(
+    "SELECT nombre FROM alumnos WHERE RUT=?",
+    [alumnoRUT]
+  );
   const nombre = alumno[0][0].nombre;
   console.log(nombre);
   await connection.end();
   try {
-    const mailList = results.map(row => row.mail);
+    const mailList = results.map((row) => row.mail);
 
     const data = await transporter.sendMail({
       from: ' "Futuro sistema de seminario de titulación UV" <titulacionapu@uv.cl>',
@@ -315,19 +433,30 @@ export const subirTesis = async (req, res) => {
       html: `<h5>Se ha subido una nueva tesis para el alumno con rut ${alumnoRUT}, nombre <h4>${nombre}<h4/></h5>`,
     });
   } catch (e) {
-    res.status(500).send({ message: "Archivo subido con éxito, pero no se pudo enviar la notificación." });
+    res
+      .status(500)
+      .send({
+        message:
+          "Archivo subido con éxito, pero no se pudo enviar la notificación.",
+      });
   }
   tesis.mv(uploadPath, (err) => {
     if (err) {
-      console.error('Error al subir la tesis:', err);
-      return res.status(500).send({ message: "No se ha podido subir la tesis" });
+      console.error("Error al subir la tesis:", err);
+      return res
+        .status(500)
+        .send({ message: "No se ha podido subir la tesis" });
     }
     res.send({ message: "La tesis ha sido subida correctamente." });
   });
 };
 
 export const descargarTesis = async (req, res) => {
-  const filePath = path.join(__dirname, '../public/tesis', `${req.params.rut}.pdf`);
+  const filePath = path.join(
+    __dirname,
+    "../public/tesis",
+    `${req.params.rut}.pdf`
+  );
   if (fs.existsSync(filePath)) {
     res.download(filePath, `Tesis_${req.params.rut}.pdf`, (err) => {
       if (err) {
@@ -338,15 +467,15 @@ export const descargarTesis = async (req, res) => {
     });
   } else {
     res.status(404).send({
-      message: "Tesis no encontrada."
+      message: "Tesis no encontrada.",
     });
   }
 };
 
 export const descargarArchivoWord = async (req, res) => {
-  const filePath = path.join(__dirname, '../public/ficha_alumno', 'ficha.docx');
+  const filePath = path.join(__dirname, "../public/ficha_alumno", "ficha.docx");
   if (fs.existsSync(filePath)) {
-    res.download(filePath, 'archivo_word.docx', (err) => {
+    res.download(filePath, "archivo_word.docx", (err) => {
       if (err) {
         res.status(500).send({
           message: "No se pudo descargar el archivo. " + err,
@@ -355,21 +484,25 @@ export const descargarArchivoWord = async (req, res) => {
     });
   } else {
     res.status(404).send({
-      message: "Archivo no encontrado."
+      message: "Archivo no encontrado.",
     });
   }
 };
 
 export const descargarFicha = async (req, res) => {
   const rut = req.params.rut;
-  const filePath = path.join(__dirname, '../public/fichas_tesis', `${rut}.docx`);
-  console.log(filePath)
-  const filename = `Ficha_tesis_${rut}.docx`; 
+  const filePath = path.join(
+    __dirname,
+    "../public/fichas_tesis",
+    `${rut}.docx`
+  );
+  console.log(filePath);
+  const filename = `Ficha_tesis_${rut}.docx`;
 
   if (fs.existsSync(filePath)) {
     res.download(filePath, filename, (err) => {
       if (err) {
-        console.error('Error al descargar el archivo:', err);
+        console.error("Error al descargar el archivo:", err);
         res.status(500).send({
           message: "No se pudo descargar el archivo. " + err,
         });
@@ -377,7 +510,7 @@ export const descargarFicha = async (req, res) => {
     });
   } else {
     res.status(404).send({
-      message: "Archivo no encontrado."
+      message: "Archivo no encontrado.",
     });
   }
 };
