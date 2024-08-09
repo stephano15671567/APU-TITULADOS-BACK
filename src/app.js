@@ -11,6 +11,7 @@ import secretariasRoutes from './routes/secretariaRoutes.js';
 import notasRoutes from './routes/notasRoutes.js';
 import archivosRoutes from './routes/archivosRoutes.js';
 import correosRoutes from './routes/correosRoutes.js';
+import stateRoutes from './routes/statesRoutes.js';
 import reportRoutes from './routes/reportRoutes.js';
 import value from './const/const.js';
 
@@ -53,6 +54,7 @@ app.use('/api/secretarias', secretariasRoutes);
 app.use('/api/notas', notasRoutes);
 app.use('/api/archivos', archivosRoutes);
 app.use('/api/correo_send', correosRoutes);
+app.use('/api/states', stateRoutes);
 app.get('/', (req, res) => {
   res.send('Hello World!');
 });
