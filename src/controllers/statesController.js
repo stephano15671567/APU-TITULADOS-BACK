@@ -21,11 +21,11 @@ export const getStates = async (req, res) => {
 export const addState = async (req, res) => {
   const connection = await createConnection();
   const { RUT, state} = req.body;
-  console.log(RUT)
+  const process_date = new Date()
   try {
     const [result] = await connection.query(
-      "INSERT INTO states (RUT, state) VALUES (?, ?)",
-      [RUT, state]
+      "INSERT INTO states (RUT, state, process_date) VALUES (?, ?, ?)",
+      [RUT, state, process_date]
     );
     res.json(result);
   } catch (error) {
@@ -51,4 +51,4 @@ export const updateState = async (req, res) => {
   } finally {
     await connection.end();
   }
-};  
+};
