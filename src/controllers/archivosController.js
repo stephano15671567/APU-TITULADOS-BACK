@@ -109,9 +109,9 @@ export const descargar = async (req, res) => {
 };
 
 export const descargarRubricaGuía = async (req, res) => {
-  const filePath = path.join(__dirname, "../public/rubricas/guia", `guia.xlsx`);
+  const filePath = path.join(__dirname, "../public/rubricas/guia", `guia.docx`);
   if (fs.existsSync(filePath)) {
-    res.download(filePath, `guia.xlsx`, (err) => {
+    res.download(filePath, `guia.docx`, (err) => {
       if (err) {
         res.status(500).send({
           message: "No se pudo descargar el archivo. " + err,
@@ -210,7 +210,7 @@ export const subirRubricaGuia = async (req, res) => {
   const uploadPath = path.join(
     __dirname,
     "../public/rubricas/Guia2",
-    `${alumnoRUT}.xlsx`
+    `${alumnoRUT}.pdf`
   );
   //Módulo de notificación
   const connection = await createConnection();
@@ -255,9 +255,9 @@ export const descargarRubricaGuiaConNotas = async (req, res) => {
   const filePath = path.join(
     __dirname,
     "../public/rubricas/Guia2",
-    `${rut}.xlsx`
+    `${rut}.pdf`
   );
-  const filename = `Rubrica_Guia_Con_Notas_${rut}.xlsx`; // Utiliza ambos, RUT y nombre, en el nombre del archivo de descarga
+  const filename = `Rubrica_Guia_Con_Notas_${rut}.pdf`; // Utiliza ambos, RUT y nombre, en el nombre del archivo de descarga
 
   if (fs.existsSync(filePath)) {
     res.download(filePath, filename, (err) => {
@@ -291,7 +291,7 @@ export const verificarArchivosAlumno = async (req, res) => {
       ? 1
       : 0,
     guia: fs.existsSync(
-      path.join(__dirname, "../public/rubricas/Guia2", `${rut}.xlsx`)
+      path.join(__dirname, "../public/rubricas/Guia2", `${rut}.pdf`)
     )
       ? 1
       : 0,
