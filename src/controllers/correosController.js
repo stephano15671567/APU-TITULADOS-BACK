@@ -66,7 +66,7 @@ export const notification = async (req, res) => {
       const attachments = [
         {
           filename: `Ficha_de_inscripcion-${results[0].alumno_RUT}.docx`,
-          path: `./src/public/fichas_tesis/${results[0].alumno_RUT}.docx`,
+          path: `./src/public/fichas_tesis/${results[0].alumno_RUT}.pdf`,
         }
       ];
 
@@ -80,6 +80,7 @@ export const notification = async (req, res) => {
       const info = await transporter.sendMail({
         from: ` "Futuro sistema de seminario de titulación UV" <${correo_SST}>`,
         to: `${results[0].mail}`,
+        cc: `${results[0].mail}`,
         subject: "Asignación",
         text: `Asignación con rol de ${results[0].rol}`,
         html: `<h5>Asignación a profesor ${results[0].nombre_profesor} a cargo de la tesis de ${results[0].alumno_nombre} con rol de ${results[0].rol}</h5>`,
