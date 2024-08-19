@@ -55,11 +55,14 @@ export const mail = async (req, res) => {
 export const notification = async (req, res) => {
   try {
     console.log(req.params);
+    const [resultsmail] = await connection.query("SELECT mail FROM secretaria");
     const connection = await createConnection();
     const [results] = await connection.query(
       "SELECT p.mail, asi.profesor_id, asi.asignacion_id, a.nombre as alumno_nombre, a.rut as alumno_RUT, p.nombre as nombre_profesor, asi.rol FROM alumnos as a INNER JOIN asignaciones_profesores as asi ON a.RUT = asi.alumno_RUT INNER JOIN profesores as p ON asi.profesor_id = p.profesor_id WHERE asignacion_id = ?;",
       [req.params.assign]
     );
+    const mailList = resultsmail.map((row) => row.mail);
+
     await connection.end();
     console.log(results);
     try {
@@ -80,7 +83,7 @@ export const notification = async (req, res) => {
       const info = await transporter.sendMail({
         from: ` "Futuro sistema de seminario de titulación UV" <${correo_SST}>`,
         to: `${results[0].mail}`,
-        cc: `${results[0].mail}`,
+        cc:  mailList.join(","),
         subject: "Asignación",
         text: `Asignación con rol de ${results[0].rol}`,
         html: `<h5>Asignación a profesor ${results[0].nombre_profesor} a cargo de la tesis de ${results[0].alumno_nombre} con rol de ${results[0].rol}</h5>`,
