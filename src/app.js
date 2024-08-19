@@ -20,7 +20,7 @@ const app = express();
 const corsOptions = {
   credentials: true,
   optionSuccessStatus: 200,
-  methods: "GET, PUT, POST, DELETE",
+  methods: "GET, PUT, POST, DELETE, PATCH",
   origin: [
     "https://titulados.administracionpublica-uv.cl",
     "http://localhost:3000",
