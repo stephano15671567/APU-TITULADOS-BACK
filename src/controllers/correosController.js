@@ -66,7 +66,7 @@ export const notification = async (req, res) => {
       const attachments = [
         {
           filename: `Ficha_de_inscripcion-${results[0].alumno_RUT}.docx`,
-          path: `./src/public/fichas_tesis/${results[0].alumno_RUT}.pdf`,
+          path: `./src/public/fichas_tesis/${results[0].alumno_RUT}.docx`,
         }
       ];
 
