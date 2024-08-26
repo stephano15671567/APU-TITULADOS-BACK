@@ -4,6 +4,8 @@ import path from "path";
 import { fileURLToPath } from "url";
 import fs from "fs";
 import * as nodemailer from "nodemailer";
+import PizZip from "pizzip";
+import Docxtemplater from "docxtemplater";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -66,19 +68,15 @@ export const subirArchivo = async (req, res) => {
             },
           ],
         });
-        res
-          .status(200)
-          .send({
-            message: "Archivo subido con éxito y notificación enviada.",
-          });
+        res.status(200).send({
+          message: "Archivo subido con éxito y notificación enviada.",
+        });
       } catch (e) {
         console.error("Error al enviar la notificación:", e);
-        res
-          .status(500)
-          .send({
-            message:
-              "Archivo subido con éxito, pero no se pudo enviar la notificación.",
-          });
+        res.status(500).send({
+          message:
+            "Archivo subido con éxito, pero no se pudo enviar la notificación.",
+        });
       }
     }
   });
@@ -172,17 +170,15 @@ export const subirRubricaInformante = async (req, res) => {
     const data = await transporter.sendMail({
       from: ' "Futuro sistema de seminario de titulación UV" <titulacionapu@uv.cl>',
       to: mailList.join(","),
-      subject: "Nueva rúbrica de informante súbida",
+      subject: "Nueva rúbrica de informante subida",
       text: `Se ha subido una rúbrica de informante para el alumno: ${nombre}`,
       html: `<h5>Una nueva rúbrica de informante se ha subido para el alumno rut: ${alumnoRUT}, de nombre <h4>${nombre}<h4/></h5>`,
     });
   } catch (e) {
-    res
-      .status(500)
-      .send({
-        message:
-          "Archivo subido con éxito, pero no se pudo enviar la notificación.",
-      });
+    res.status(500).send({
+      message:
+        "Archivo subido con éxito, pero no se pudo enviar la notificación.",
+    });
   }
   //Fin módulo de notificación
 
@@ -199,7 +195,6 @@ export const subirRubricaInformante = async (req, res) => {
   });
 };
 
-// Existing function for subirRubricaGuia with database interaction removed
 export const subirRubricaGuia = async (req, res) => {
   if (!req.files || !req.files.file) {
     return res.status(400).send({ message: "No se ha subido ningún archivo." });
@@ -231,12 +226,10 @@ export const subirRubricaGuia = async (req, res) => {
       html: `<h5>Una nueva rúbrica de guía se ha subido para el alumno rut: ${alumnoRUT}, de nombre <h4>${nombre}<h4/></h5>`,
     });
   } catch (e) {
-    res
-      .status(500)
-      .send({
-        message:
-          "Archivo subido con éxito, pero no se pudo enviar la notificación.",
-      });
+    res.status(500).send({
+      message:
+        "Archivo subido con éxito, pero no se pudo enviar la notificación.",
+    });
   }
   //Fin módulo de notificación
   file.mv(uploadPath, (err) => {
@@ -257,7 +250,7 @@ export const descargarRubricaGuiaConNotas = async (req, res) => {
     "../public/rubricas/Guia2",
     `${rut}.pdf`
   );
-  const filename = `Rubrica_Guia_Con_Notas_${rut}.pdf`; // Utiliza ambos, RUT y nombre, en el nombre del archivo de descarga
+  const filename = `Rubrica_Guia_Con_Notas_${rut}.pdf`;
 
   if (fs.existsSync(filePath)) {
     res.download(filePath, filename, (err) => {
@@ -313,7 +306,7 @@ export const descargarRubricaInformanteConNotas = async (req, res) => {
     "../public/rubricas/Informante2",
     `${rut}.xlsx`
   );
-  const filename = `Rubrica_Informante_Con_Notas_${rut}.xlsx`; // Incluye ambos, RUT y nombre, en el nombre del archivo final
+  const filename = `Rubrica_Informante_Con_Notas_${rut}.xlsx`;
 
   if (fs.existsSync(filePath)) {
     res.download(filePath, filename, (err) => {
@@ -341,13 +334,19 @@ async function obtenerDatosParaActa(rut) {
       n.nota_informante AS nota_profesor_informante,
       n.nota_final AS nota_tesis,
       p_guia.nombre AS nombre_profesor_guia,
-      p_inf.nombre AS nombre_profesor_informante
+      p_inf.nombre AS nombre_profesor_informante,
+      p_pres.nombre AS nombre_profesor_presidente,  
+      p_sec.nombre AS nombre_secretario  
     FROM alumnos al
     LEFT JOIN notas n ON al.RUT = n.alumno_RUT
-    LEFT JOIN asignaciones_profesores asig_guia ON al.RUT = asig_guia.alumno_RUT AND asig_guia.rol = 'guia'
+    LEFT JOIN asigancionesprofesores asig_guia ON al.RUT = asig_guia.alumno_RUT AND asig_guia.rol = 'guia'
     LEFT JOIN profesores p_guia ON asig_guia.profesor_id = p_guia.profesor_id
-    LEFT JOIN asignaciones_profesores asig_inf ON al.RUT = asig_inf.alumno_RUT AND asig_inf.rol = 'informante'
+    LEFT JOIN asigancionesprofesores asig_inf ON al.RUT = asig_inf.alumno_RUT AND asig_inf.rol = 'informante'
     LEFT JOIN profesores p_inf ON asig_inf.profesor_id = p_inf.profesor_id
+    LEFT JOIN asigancionesprofesores asig_pres ON al.RUT = asig_pres.alumno_RUT AND asig_pres.rol = 'presidente'
+    LEFT JOIN profesores p_pres ON asig_pres.profesor_id = p_pres.profesor_id
+    LEFT JOIN asigancionesprofesores asig_sec ON al.RUT = asig_sec.alumno_RUT AND asig_sec.rol = 'secretario'
+    LEFT JOIN profesores p_sec ON asig_sec.profesor_id = p_sec.profesor_id
     WHERE al.RUT = ?;
   `;
 
@@ -361,6 +360,7 @@ async function obtenerDatosParaActa(rut) {
 
   return results[0];
 }
+
 
 export const generarYDescargarActa = async (req, res) => {
   const rut = req.params.rut;
@@ -382,7 +382,16 @@ export const generarYDescargarActa = async (req, res) => {
     });
 
     // Rellenar la plantilla con los datos obtenidos
-    doc.render(datosActa);
+    doc.render({
+      nombre_alumno: datosActa.nombre_alumno,
+      nota_profesor_guia: datosActa.nota_profesor_guia,
+      nota_profesor_informante: datosActa.nota_profesor_informante,
+      nota_tesis: datosActa.nota_tesis,
+      nombre_profesor_guia: datosActa.nombre_profesor_guia,
+      nombre_profesor_informante: datosActa.nombre_profesor_informante,
+      nombre_profesor_presidente: datosActa.nombre_profesor_presidente, // Nuevo campo
+      nombre_secretario: datosActa.nombre_secretario // Nuevo campo
+    });
 
     // Generar el documento DOCX
     const buf = doc.getZip().generate({ type: "nodebuffer" });
@@ -400,6 +409,7 @@ export const generarYDescargarActa = async (req, res) => {
     res.status(500).send("Error al generar el acta");
   }
 };
+
 
 export const subirTesis = async (req, res) => {
   if (!req.files || !req.files.tesis) {
@@ -433,12 +443,10 @@ export const subirTesis = async (req, res) => {
       html: `<h5>Se ha subido una nueva tesis para el alumno con rut ${alumnoRUT}, nombre <h4>${nombre}<h4/></h5>`,
     });
   } catch (e) {
-    res
-      .status(500)
-      .send({
-        message:
-          "Archivo subido con éxito, pero no se pudo enviar la notificación.",
-      });
+    res.status(500).send({
+      message:
+        "Archivo subido con éxito, pero no se pudo enviar la notificación.",
+    });
   }
   tesis.mv(uploadPath, (err) => {
     if (err) {
