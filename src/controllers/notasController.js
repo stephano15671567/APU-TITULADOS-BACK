@@ -46,7 +46,7 @@ export const upsertNota = async (req, res) => {
     const [existing] = await connection.execute(
       `SELECT n.nota_id
        FROM notas n
-       INNER JOIN asigancionesprofesores ap ON n.alumno_RUT = ap.alumno_RUT
+       INNER JOIN asiganciones_profesores ap ON n.alumno_RUT = ap.alumno_RUT
        WHERE n.alumno_RUT = ? AND ap.profesor_id = ?`,
       [alumno_RUT, profesor_id]
     );

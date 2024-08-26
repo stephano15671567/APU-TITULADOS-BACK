@@ -14,7 +14,7 @@ const incompatibleRolesMap = {
 const checkForIncompatibleRoles = async (connection, alumnoId, newProfesorId, newRol, existingAssignmentId = null) => {
   // Fetch existing assignments excluding the current one (if updating)
   const [existingAssignments] = await connection.execute(
-    "SELECT * FROM asigancionesprofesores WHERE alumno_RUT = ?" + (existingAssignmentId ? " AND asignacion_id != ?" : ""),
+    "SELECT * FROM asiganciones_profesores WHERE alumno_RUT = ?" + (existingAssignmentId ? " AND asignacion_id != ?" : ""),
     existingAssignmentId ? [alumnoId, existingAssignmentId] : [alumnoId]
   );
 
@@ -38,7 +38,7 @@ export const modifyAssignment = async (req, res) => {
 
     // Proceed with updating the assignment if no incompatible roles found
     const [results] = await connection.execute(
-      "UPDATE asigancionesprofesores SET profesor_id = ?, rol = ? WHERE asignacion_id = ?",
+      "UPDATE asiganciones_profesores SET profesor_id = ?, rol = ? WHERE asignacion_id = ?",
       [profesorId, rol, id]
     );
 
@@ -55,7 +55,7 @@ export const deleteAssignment = async (req, res) => {
   
   try {
     const [assignment] = await connection.execute(
-      "SELECT rol FROM asigancionesprofesores WHERE asignacion_id = ?",
+      "SELECT rol FROM asiganciones_profesores WHERE asignacion_id = ?",
       [id]
     );
 
@@ -70,7 +70,7 @@ export const deleteAssignment = async (req, res) => {
     
     // Eliminar la asignación
     await connection.execute(
-      "DELETE FROM asigancionesprofesores WHERE asignacion_id = ?",
+      "DELETE FROM asiganciones_profesores WHERE asignacion_id = ?",
       [id]
     );
 
@@ -93,7 +93,7 @@ export const assignProfessorToStudent = async (req, res) => {
 
     // Insert the new assignment
     const [result] = await connection.execute(
-      "INSERT INTO asigancionesprofesores (alumno_RUT, profesor_id, rol) VALUES (?, ?, ?)",
+      "INSERT INTO asiganciones_profesores (alumno_RUT, profesor_id, rol) VALUES (?, ?, ?)",
       [alumnoId, profesorId, rol]
     );
 
@@ -114,7 +114,7 @@ export const getAssignmentsByStudent = async (req, res) => {
   try {
     connection = await createConnection();
     const [results] = await connection.query(
-      "SELECT * FROM asigancionesprofesores WHERE alumno_RUT = ?",
+      "SELECT * FROM asiganciones_profesores WHERE alumno_RUT = ?",
       [alumnoId]
     );
     await connection.end();
@@ -133,7 +133,7 @@ export const getGuiaAssignmentsByProfessor = async (req, res) => {
   const connection = await createConnection();
   try {
     const [guiaAssignments] = await connection.query(
-      'SELECT * FROM asigancionesprofesores WHERE profesor_id = ? AND rol = "guia"',
+      'SELECT * FROM asiganciones_profesores WHERE profesor_id = ? AND rol = "guia"',
       [profesorId]
     );
     res.json(guiaAssignments);
@@ -152,7 +152,7 @@ export const getInformanteAssignmentsByProfessor = async (req, res) => {
   const connection = await createConnection();
   try {
     const [informanteAssignments] = await connection.query(
-      'SELECT * FROM asigancionesprofesores WHERE profesor_id = ? AND rol = "informante"',
+      'SELECT * FROM asiganciones_profesores WHERE profesor_id = ? AND rol = "informante"',
       [profesorId]
     );
     res.json(informanteAssignments);
@@ -171,7 +171,7 @@ export const getAllAssignments = async (req, res) => {
   try {
     connection = await createConnection();
     const [results] = await connection.query(
-      "SELECT asi.profesor_id, asi.asignacion_id, a.nombre as alumno_nombre, a.rut as alumno_RUT, p.nombre as nombre_profesor, asi.rol FROM alumnos as a INNER JOIN asigancionesprofesores as asi ON a.RUT = asi.alumno_RUT INNER JOIN profesores as p ON asi.profesor_id = p.profesor_id;"
+      "SELECT asi.profesor_id, asi.asignacion_id, a.nombre as alumno_nombre, a.rut as alumno_RUT, p.nombre as nombre_profesor, asi.rol FROM alumnos as a INNER JOIN asiganciones_profesores as asi ON a.RUT = asi.alumno_RUT INNER JOIN profesores as p ON asi.profesor_id = p.profesor_id;"
     );
     await connection.end();
     res.status(200).json(results);
