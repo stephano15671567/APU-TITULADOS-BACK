@@ -339,13 +339,13 @@ async function obtenerDatosParaActa(rut) {
       p_sec.nombre AS nombre_secretario  
     FROM alumnos al
     LEFT JOIN notas n ON al.RUT = n.alumno_RUT
-    LEFT JOIN asiganciones_profesores asig_guia ON al.RUT = asig_guia.alumno_RUT AND asig_guia.rol = 'guia'
+    LEFT JOIN asignaciones_profesores asig_guia ON al.RUT = asig_guia.alumno_RUT AND asig_guia.rol = 'guia'
     LEFT JOIN profesores p_guia ON asig_guia.profesor_id = p_guia.profesor_id
-    LEFT JOIN asiganciones_profesores asig_inf ON al.RUT = asig_inf.alumno_RUT AND asig_inf.rol = 'informante'
+    LEFT JOIN asignaciones_profesores asig_inf ON al.RUT = asig_inf.alumno_RUT AND asig_inf.rol = 'informante'
     LEFT JOIN profesores p_inf ON asig_inf.profesor_id = p_inf.profesor_id
-    LEFT JOIN asiganciones_profesores asig_pres ON al.RUT = asig_pres.alumno_RUT AND asig_pres.rol = 'presidente'
+    LEFT JOIN asignaciones_profesores asig_pres ON al.RUT = asig_pres.alumno_RUT AND asig_pres.rol = 'presidente'
     LEFT JOIN profesores p_pres ON asig_pres.profesor_id = p_pres.profesor_id
-    LEFT JOIN asiganciones_profesores asig_sec ON al.RUT = asig_sec.alumno_RUT AND asig_sec.rol = 'secretario'
+    LEFT JOIN asignaciones_profesores asig_sec ON al.RUT = asig_sec.alumno_RUT AND asig_sec.rol = 'secretario'
     LEFT JOIN profesores p_sec ON asig_sec.profesor_id = p_sec.profesor_id
     WHERE al.RUT = ?;
   `;
