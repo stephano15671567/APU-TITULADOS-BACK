@@ -29,7 +29,7 @@ export const mail = async (req, res) => {
   console.log(rut);
   try {
     const info = await transporter.sendMail({
-      from: ' "Futuro sistema de seminario de titulación UV" <titulacionapu@uv.cl>',
+      from: ' "Sistema de seminario de titulación UV" <titulacionapu@uv.cl>',
       to: `${correo_SST}`,
       subject: "Testing",
       text: "Testing",
@@ -82,12 +82,14 @@ export const notification = async (req, res) => {
       }
 
       const info = await transporter.sendMail({
-        from: ` "Futuro sistema de seminario de titulación UV" <${correo_SST}>`,
+        from: ` "Sistema de seminario de titulación UV" <${correo_SST}>`,
         to: `${results[0].mail}`,
         cc:  mailList.join(","),
         subject: "Asignación",
         text: `Asignación con rol de ${results[0].rol}`,
-        html: `<h5>Asignación a profesor ${results[0].nombre_profesor} a cargo de la tesis de ${results[0].alumno_nombre} con rol de ${results[0].rol}</h5>`,
+        html: `<h5>
+        Estimada(o) académica(o)
+        ${results[0].nombre_profesor} se le ha asignado a cargo de la tesis de ${results[0].alumno_nombre} con rol de ${results[0].rol}   No responder a este correo.</h5>`,
         attachments: attachments,
       });
 

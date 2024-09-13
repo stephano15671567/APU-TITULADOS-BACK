@@ -56,11 +56,12 @@ export const subirArchivo = async (req, res) => {
         const mailList = results.map((row) => row.mail);
 
         const data = await transporter.sendMail({
-          from: ' "Futuro sistema de seminario de titulación UV" <titulacionapu@uv.cl>',
+          from: ' "Sistema de seminario de titulación UV" <titulacionapu@uv.cl>',
           to: mailList.join(","),
           subject: "Nueva ficha de inscripción subida",
           text: `Se ha subido una nueva ficha de inscripción para el alumno con RUT ${name}.`,
-          html: `<h5>Se ha subido una nueva ficha de inscripción para el alumno con RUT ${name}.</h5>`,
+          html: `<h5>Se ha subido una nueva ficha de inscripción para el alumno con RUT ${name}.
+          No responder a este correo.</h5>`,
           attachments: [
             {
               filename: `Ficha_de_inscripcion-${name}.docx`,
@@ -168,11 +169,12 @@ export const subirRubricaInformante = async (req, res) => {
     const mailList = results.map((row) => row.mail);
 
     const data = await transporter.sendMail({
-      from: ' "Futuro sistema de seminario de titulación UV" <titulacionapu@uv.cl>',
+      from: ' "Sistema de seminario de titulación UV" <titulacionapu@uv.cl>',
       to: mailList.join(","),
       subject: "Nueva rúbrica de informante subida",
       text: `Se ha subido una rúbrica de informante para el alumno: ${nombre}`,
-      html: `<h5>Una nueva rúbrica de informante se ha subido para el alumno rut: ${alumnoRUT}, de nombre <h4>${nombre}<h4/></h5>`,
+      html: `<h5>Una nueva rúbrica de informante se ha subido para el alumno rut: ${alumnoRUT}, de nombre <h4>${nombre}<h4/>
+      No responder a este correo</h5>`,
     });
   } catch (e) {
     res.status(500).send({
@@ -219,11 +221,12 @@ export const subirRubricaGuia = async (req, res) => {
     const mailList = results.map((row) => row.mail);
 
     const data = await transporter.sendMail({
-      from: ' "Futuro sistema de seminario de titulación UV" <titulacionapu@uv.cl>',
+      from: ' "Sistema de seminario de titulación UV" <titulacionapu@uv.cl>',
       to: mailList.join(","),
       subject: "Nueva rúbrica de guía subida",
       text: `Se ha subido una rúbrica de guía para el alumno: ${nombre}`,
-      html: `<h5>Una nueva rúbrica de guía se ha subido para el alumno rut: ${alumnoRUT}, de nombre <h4>${nombre}<h4/></h5>`,
+      html: `<h5>Una nueva rúbrica de guía se ha subido para el alumno rut: ${alumnoRUT}, de nombre <h4>${nombre}<h4/>
+    No responder a este correo</h5>`,
     });
   } catch (e) {
     res.status(500).send({
@@ -436,11 +439,12 @@ export const subirTesis = async (req, res) => {
     const mailList = results.map((row) => row.mail);
 
     const data = await transporter.sendMail({
-      from: ' "Futuro sistema de seminario de titulación UV" <titulacionapu@uv.cl>',
+      from: ' "Seminario de titulación UV" <titulacionapu@uv.cl>',
       to: mailList.join(","),
       subject: "Nueva tesis subida",
       text: `Se ha subido una nueva tesis del alumno ${nombre}`,
-      html: `<h5>Se ha subido una nueva tesis para el alumno con rut ${alumnoRUT}, nombre <h4>${nombre}<h4/></h5>`,
+      html: `<h5>Se ha subido una nueva tesis para el alumno con rut ${alumnoRUT}, nombre <h4>${nombre}<h4/> 
+      No responder a este correo. </h5>`,
     });
   } catch (e) {
     res.status(500).send({
