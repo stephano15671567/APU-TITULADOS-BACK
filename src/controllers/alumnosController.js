@@ -24,7 +24,6 @@ export const verifyToken = async (req, res) => {
   }
 };
 
-
 export const authAlumno = async (req, res) => {
   try {
     const connection = await createConnection();
@@ -35,13 +34,13 @@ export const authAlumno = async (req, res) => {
       [token_dec.email]
     );
     console.log(user)
-    if (user.length == 0) { //Situación donde no existe alumno dentro de la bd
+    if (user.length == 0) { 
       await connection.end();
       return res
         .status(401)
         .json({ message: "Alumno no perteneciente", status: false });
     } else {
-      try { //Situación donde existe alumno dentro de la bd
+      try { 
         await connection.execute(
           "UPDATE alumnos SET Gtoken = ? WHERE mail = ? ",
           [token, token_dec.email]
@@ -49,11 +48,11 @@ export const authAlumno = async (req, res) => {
       } catch (e) {
         console.log(e);
         return res
-          .status(500) //Error de sv
+          .status(500)
           .json({ message: "Alumno no autenticado", status: false });
       }
 
-      await connection.end(); //Situación donde existe alumno dentro de la bd
+      await connection.end(); 
 
       const payload = {
         status: true,
@@ -66,9 +65,9 @@ export const authAlumno = async (req, res) => {
 
       return res
         .status(200)
-        .json(token_enc);  //GENERAR CORREO ENCRIPTADO PARA DESPUÉS
+        .json(token_enc);
     }
-  } catch (e) { //Error de sv
+  } catch (e) {
     console.log("error: ", e);
     return res
       .status(500)
@@ -92,11 +91,12 @@ export const createAlumno = async (req, res) => {
     Gtoken = null ,
     secretario,
     presidente,
+    tesis, // Agregar la propiedad tesis
   } = req.body;
   try {
     const connection = await createConnection();
     const [results] = await connection.execute(
-      "INSERT INTO alumnos (nombre, RUT, CODIGO, ANO_INGRESO, ANO_EGRESO, n_resolucion, hora, fecha_examen, mail, Gtoken, secretario, presidente) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      "INSERT INTO alumnos (nombre, RUT, CODIGO, ANO_INGRESO, ANO_EGRESO, n_resolucion, hora, fecha_examen, mail, Gtoken, secretario, presidente, tesis) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
       [
         nombre || null,
         RUT,
@@ -110,6 +110,7 @@ export const createAlumno = async (req, res) => {
         Gtoken || null,
         secretario || null,
         presidente || null,
+        tesis || null, // Agregar tesis
       ]
     );
     await connection.end();
@@ -134,6 +135,7 @@ export const getAllAlumnos = async (req, res) => {
   }
 };
 
+// Actualizar un alumno
 export const updateAlumno = async (req, res) => {
   const { RUT } = req.params;
   const {
@@ -144,17 +146,16 @@ export const updateAlumno = async (req, res) => {
     n_resolucion,
     hora,
     fecha_examen,
-    
     mail,
     Gtoken,
     secretario,
     presidente,
+    tesis, // Agregar la propiedad tesis
   } = req.body;
   try {
     const connection = await createConnection();
     const [results] = await connection.execute(
-      "UPDATE alumnos SET nombre = ?, CODIGO = ?, ANO_INGRESO = ?, ANO_EGRESO = ?, n_resolucion = ?, hora = ?, fecha_examen = ?, mail = ?, Gtoken = ?, secretario = ?, presidente = ? WHERE RUT = ?",
-
+      "UPDATE alumnos SET nombre = ?, CODIGO = ?, ANO_INGRESO = ?, ANO_EGRESO = ?, n_resolucion = ?, hora = ?, fecha_examen = ?, mail = ?, Gtoken = ?, secretario = ?, presidente = ?, tesis = ? WHERE RUT = ?",
       [
         nombre,
         CODIGO,
@@ -167,6 +168,7 @@ export const updateAlumno = async (req, res) => {
         Gtoken,
         secretario,
         presidente,
+        tesis, // Agregar tesis
         RUT,
       ]
     );
@@ -178,9 +180,6 @@ export const updateAlumno = async (req, res) => {
   }
 };
 
-
-
-
 // Eliminar un alumno
 export const deleteAlumno = async (req, res) => {
   const { RUT } = req.params;
@@ -190,6 +189,34 @@ export const deleteAlumno = async (req, res) => {
     await connection.end();
     res.json({ message: "Alumno eliminado" });
   } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const updateTesis = async (req, res) => {
+  const { RUT } = req.params; // Obtener el RUT del parámetro de la URL
+  const { tesis } = req.body; // Obtener el título de la tesis del cuerpo de la solicitud
+
+  if (!tesis) {
+    return res.status(400).json({ message: "El título de la tesis es obligatorio" });
+  }
+
+  try {
+    const connection = await createConnection();
+    // Actualizar solo el campo "tesis" del alumno con el RUT especificado
+    const [results] = await connection.execute(
+      "UPDATE alumnos SET tesis = ? WHERE RUT = ?",
+      [tesis, RUT]
+    );
+    await connection.end();
+
+    if (results.affectedRows === 0) {
+      return res.status(404).json({ message: "Alumno no encontrado" });
+    }
+
+    res.json({ message: "Título de la tesis actualizado correctamente" });
+  } catch (error) {
+    console.error(error);
     res.status(500).json({ message: error.message });
   }
 };

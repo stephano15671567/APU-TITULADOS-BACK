@@ -55,6 +55,7 @@ app.use('/api/notas', notasRoutes);
 app.use('/api/archivos', archivosRoutes);
 app.use('/api/correo_send', correosRoutes);
 app.use('/api/states', stateRoutes);
+
 app.get('/', (req, res) => {
   res.send('Hello World!');
 });

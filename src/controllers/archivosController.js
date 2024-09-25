@@ -333,6 +333,7 @@ async function obtenerDatosParaActa(rut) {
   const query = `
     SELECT 
       al.nombre AS nombre_alumno,
+      al.tesis AS tesis,
       n.nota_guia AS nota_profesor_guia,
       n.nota_informante AS nota_profesor_informante,
       n.nota_final AS nota_tesis,
@@ -372,6 +373,10 @@ export const generarYDescargarActa = async (req, res) => {
     // Obtener los datos necesarios para llenar la plantilla del acta
     const datosActa = await obtenerDatosParaActa(rut);
 
+    // Obtener la fecha actual
+    const fechaActual = new Date();
+    const opcionesFecha = { year: 'numeric', month: 'long', day: 'numeric' };
+    const fechaFormateada = fechaActual.toLocaleDateString('es-ES', opcionesFecha);
     // Cargar la plantilla de documento Word (DOCX)
     const templatePath = path.resolve(
       __dirname,
@@ -392,8 +397,10 @@ export const generarYDescargarActa = async (req, res) => {
       nota_tesis: datosActa.nota_tesis,
       nombre_profesor_guia: datosActa.nombre_profesor_guia,
       nombre_profesor_informante: datosActa.nombre_profesor_informante,
-      nombre_profesor_presidente: datosActa.nombre_profesor_presidente, // Nuevo campo
-      nombre_secretario: datosActa.nombre_secretario // Nuevo campo
+      nombre_profesor_presidente: datosActa.nombre_profesor_presidente, 
+      nombre_secretario: datosActa.nombre_secretario,
+      tesis: datosActa.tesis,
+      fecha_actual: fechaFormateada
     });
 
     // Generar el documento DOCX
