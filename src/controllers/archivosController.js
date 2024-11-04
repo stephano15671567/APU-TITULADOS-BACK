@@ -34,10 +34,11 @@ export const subirArchivo = async (req, res) => {
 
   let file = req.files.file;
   const name = req.params.id;
+  const extension = path.extname(file.name);
   let uploadPath = path.join(
     __dirname,
     "../public/fichas_tesis",
-    `${name}.docx`
+    `${name}${extension}`
   );
 
   file.mv(uploadPath, async (err) => {
@@ -56,15 +57,15 @@ export const subirArchivo = async (req, res) => {
         const mailList = results.map((row) => row.mail);
 
         const data = await transporter.sendMail({
-          from: ' "Sistema de seminario de titulación UV" <titulacionapu@uv.cl>',
+          from: '"Sistema de seminario de titulación UV" <no-reply@uv.cl>',
           to: mailList.join(","),
           subject: "Nueva ficha de inscripción subida",
           text: `Se ha subido una nueva ficha de inscripción para el alumno con RUT ${name}.`,
           html: `<h5>Se ha subido una nueva ficha de inscripción para el alumno con RUT ${name}.
-          No responder a este correo.</h5>`,
+              No responder a este correo.</h5>`,
           attachments: [
             {
-              filename: `Ficha_de_inscripcion-${name}.docx`,
+              filename: `Ficha_de_inscripcion-${name}${extension}`,
               path: uploadPath,
             },
           ],
@@ -84,13 +85,15 @@ export const subirArchivo = async (req, res) => {
 };
 
 export const descargar = async (req, res) => {
-  const filePath = path.join(
-    __dirname,
-    "../public/fichas_tesis",
-    `${req.params.rut}.docx`
+  const directoryPath = path.join(__dirname, "../public/fichas_tesis");
+  const files = fs.readdirSync(directoryPath);
+  const fileName = files.find((file) =>
+    file.startsWith(`${req.params.rut}.`)
   );
-  if (fs.existsSync(filePath)) {
-    res.download(filePath, (err) => {
+
+  if (fileName) {
+    const filePath = path.join(directoryPath, fileName);
+    res.download(filePath, fileName, (err) => {
       if (err) {
         console.error("Error al descargar el archivo:", err);
         res.status(500).send({
