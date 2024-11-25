@@ -513,26 +513,42 @@ export const descargarArchivoWord = async (req, res) => {
 
 export const descargarFicha = async (req, res) => {
   const rut = req.params.rut;
-  const filePath = path.join(
-    __dirname,
-    "../public/fichas_tesis",
-    `${rut}.docx`
-  );
-  console.log(filePath);
-  const filename = `Ficha_tesis_${rut}.docx`;
-
-  if (fs.existsSync(filePath)) {
-    res.download(filePath, filename, (err) => {
-      if (err) {
-        console.error("Error al descargar el archivo:", err);
-        res.status(500).send({
-          message: "No se pudo descargar el archivo. " + err,
-        });
-      }
-    });
-  } else {
+  const directoryPath = path.join(__dirname, "../public/fichas_tesis");
+  
+  // Obtener todos los archivos en el directorio
+  const files = fs.readdirSync(directoryPath);
+  
+  // Filtrar los archivos que comienzan con el RUT
+  const matchingFiles = files.filter((file) => file.startsWith(`${rut}`));
+  
+  if (matchingFiles.length === 0) {
     res.status(404).send({
       message: "Archivo no encontrado.",
     });
+    return;
   }
+  
+  // Obtener información de los archivos y ordenarlos por fecha de modificación
+  const fileInfos = matchingFiles.map((file) => {
+    const filePath = path.join(directoryPath, file);
+    const stats = fs.statSync(filePath);
+    return { file, mtime: stats.mtime };
+  }).sort((a, b) => b.mtime - a.mtime);
+  
+  // Seleccionar el archivo más reciente
+  const mostRecentFile = fileInfos[0].file;
+  const filePath = path.join(directoryPath, mostRecentFile);
+  const extension = path.extname(mostRecentFile);
+  const filename = `Ficha_tesis_${rut}${extension}`;
+  
+  // Descargar el archivo
+  res.download(filePath, filename, (err) => {
+    if (err) {
+      console.error("Error al descargar el archivo:", err);
+      res.status(500).send({
+        message: "No se pudo descargar el archivo. " + err,
+      });
+    }
+  });
 };
+
