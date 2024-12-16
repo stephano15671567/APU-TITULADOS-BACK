@@ -431,47 +431,64 @@ export const subirTesis = async (req, res) => {
 
   const tesis = req.files.tesis;
   const alumnoRUT = req.params.rut;
-  const uploadPath = path.join(
-    __dirname,
-    "../public/tesis",
-    `${alumnoRUT}.pdf`
-  );
-  const connection = await createConnection();
-  const [results] = await connection.query("SELECT mail FROM secretaria");
-  const alumno = await connection.query(
-    "SELECT nombre FROM alumnos WHERE RUT=?",
-    [alumnoRUT]
-  );
-  const nombre = alumno[0][0].nombre;
-  console.log(nombre);
-  await connection.end();
-  try {
-    const mailList = results.map((row) => row.mail);
 
-    const data = await transporter.sendMail({
-      from: ' "Seminario de titulación UV" <titulacionapu@uv.cl>',
-      to: mailList.join(","),
-      subject: "Nueva tesis subida",
-      text: `Se ha subido una nueva tesis del alumno ${nombre}`,
-      html: `<h5>Se ha subido una nueva tesis para el alumno con rut ${alumnoRUT}, nombre <h4>${nombre}<h4/> 
-      No responder a este correo. </h5>`,
+  // Ruta donde se almacenará el archivo
+  const uploadPath = path.join(__dirname, "../public/tesis", `${alumnoRUT}.pdf`);
+
+  try {
+    // Verificar si ya existe un archivo para el alumno
+    if (fs.existsSync(uploadPath)) {
+      console.log(`El archivo de tesis para el alumno ${alumnoRUT} será reemplazado.`);
+    }
+
+    // Mover (sobrescribir) el archivo al directorio
+    tesis.mv(uploadPath, async (err) => {
+      if (err) {
+        console.error("Error al subir la tesis:", err);
+        return res.status(500).send({ message: "No se ha podido subir la tesis." });
+      }
+
+      // Actualizar la base de datos con la fecha de subida más reciente
+      const connection = await createConnection();
+      await connection.query(
+        "UPDATE alumnos SET fecha_tesis = NOW() WHERE RUT = ?",
+        [alumnoRUT]
+      );
+      await connection.end();
+
+      // Notificación por correo
+      const connection2 = await createConnection();
+      const [results] = await connection2.query("SELECT mail FROM secretaria");
+      const alumno = await connection2.query(
+        "SELECT nombre FROM alumnos WHERE RUT = ?",
+        [alumnoRUT]
+      );
+      await connection2.end();
+
+      const nombre = alumno[0][0].nombre;
+      const mailList = results.map((row) => row.mail);
+
+      await transporter.sendMail({
+        from: ' "Seminario de titulación UV" <titulacionapu@uv.cl>',
+        to: mailList.join(","),
+        subject: "Nueva tesis subida",
+        text: `Se ha subido una nueva versión de la tesis para el alumno ${nombre}.`,
+        html: `<h5>Se ha subido una nueva versión de la tesis para el alumno con RUT ${alumnoRUT}, nombre <h4>${nombre}</h4>.
+               No responder a este correo.</h5>`,
+      });
+
+      res.send({
+        message: "La tesis ha sido subida y actualizada correctamente.",
+      });
     });
   } catch (e) {
+    console.error("Error general al subir la tesis:", e);
     res.status(500).send({
-      message:
-        "Archivo subido con éxito, pero no se pudo enviar la notificación.",
+      message: "No se ha podido completar la subida de la tesis.",
     });
   }
-  tesis.mv(uploadPath, (err) => {
-    if (err) {
-      console.error("Error al subir la tesis:", err);
-      return res
-        .status(500)
-        .send({ message: "No se ha podido subir la tesis" });
-    }
-    res.send({ message: "La tesis ha sido subida correctamente." });
-  });
 };
+
 
 export const descargarTesis = async (req, res) => {
   const filePath = path.join(
