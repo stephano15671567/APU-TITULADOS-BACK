@@ -51,7 +51,6 @@ app.use('/api/profesores', profesoresRoutes);
 app.use('/api/alumnos', alumnosRoutes);
 app.use('/api/asignaciones', asignacionesRoutes);
 app.use('/api/secretarias', secretariasRoutes);
-app.use('/api/notas', notasRoutes);
 app.use('/api/archivos', archivosRoutes);
 app.use('/api/correo_send', correosRoutes);
 app.use('/api/states', stateRoutes);
