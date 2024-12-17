@@ -491,25 +491,42 @@ export const subirTesis = async (req, res) => {
 
 
 export const descargarTesis = async (req, res) => {
-  const filePath = path.join(
-    __dirname,
-    "../public/tesis",
-    `${req.params.rut}.pdf`
-  );
-  if (fs.existsSync(filePath)) {
-    res.download(filePath, `Tesis_${req.params.rut}.pdf`, (err) => {
+  const rut = req.params.rut; // RUT del alumno
+  const directoryPath = path.join(__dirname, "../public/fichas_tesis");
+
+  // Extensiones a buscar (.pdf y .docx)
+  const posiblesExtensiones = [".pdf", ".docx"];
+  let fileName = null;
+
+  // Buscar el archivo con la extensión adecuada
+  for (const ext of posiblesExtensiones) {
+    const archivoPosible = `${rut}${ext}`;
+    if (fs.existsSync(path.join(directoryPath, archivoPosible))) {
+      fileName = archivoPosible;
+      break; // Sale del bucle si encuentra un archivo
+    }
+  }
+
+  // Verificar si se encontró un archivo
+  if (fileName) {
+    const filePath = path.join(directoryPath, fileName);
+    res.download(filePath, fileName, (err) => {
       if (err) {
+        console.error("Error al descargar la tesis:", err);
         res.status(500).send({
-          message: "No se pudo descargar la tesis. " + err,
+          message: "No se pudo descargar el archivo. " + err,
         });
+      } else {
+        console.log("Archivo descargado con éxito:", fileName);
       }
     });
   } else {
     res.status(404).send({
-      message: "Tesis no encontrada.",
+      message: "Archivo no encontrado para el RUT proporcionado.",
     });
   }
 };
+
 
 export const descargarArchivoWord = async (req, res) => {
   const filePath = path.join(__dirname, "../public/ficha_alumno", "ficha.docx");
