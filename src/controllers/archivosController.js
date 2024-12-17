@@ -283,10 +283,13 @@ export const verificarArchivosAlumno = async (req, res) => {
     )
       ? 1
       : 0,
-    tesis: fs.existsSync(path.join(__dirname, "../public/tesis", `${rut}.pdf`))
+    tesis: (fs.existsSync(path.join(__dirname, "../public/tesis", `${rut}.pdf`)) ||
+            fs.existsSync(path.join(__dirname, "../public/tesis", `${rut}.docx`)))
       ? 1
       : 0,
-    acta: fs.existsSync(path.join(__dirname, "../public/Acta", `${rut}.docx`))
+    acta: fs.existsSync(
+      path.join(__dirname, "../public/Acta", `${rut}.docx`)
+    )
       ? 1
       : 0,
     guia: fs.existsSync(
@@ -303,6 +306,7 @@ export const verificarArchivosAlumno = async (req, res) => {
 
   res.json(archivos);
 };
+
 
 export const descargarRubricaInformanteConNotas = async (req, res) => {
   const rut = req.params.rut;
@@ -494,38 +498,48 @@ export const descargarTesis = async (req, res) => {
   const rut = req.params.rut; // RUT del alumno
   const directoryPath = path.join(__dirname, "../public/fichas_tesis");
 
-  // Extensiones a buscar (.pdf y .docx)
+  // Extensiones permitidas
   const posiblesExtensiones = [".pdf", ".docx"];
-  let fileName = null;
 
-  // Buscar el archivo con la extensión adecuada
-  for (const ext of posiblesExtensiones) {
-    const archivoPosible = `${rut}${ext}`;
-    if (fs.existsSync(path.join(directoryPath, archivoPosible))) {
-      fileName = archivoPosible;
-      break; // Sale del bucle si encuentra un archivo
+  // Obtener todos los archivos que coincidan con el RUT y tengan extensiones permitidas
+  const archivos = fs
+    .readdirSync(directoryPath)
+    .filter((file) =>
+      posiblesExtensiones.some(
+        (ext) => file.startsWith(`${rut}`) && file.endsWith(ext)
+      )
+    );
+
+  // Si no se encuentran archivos, enviar error 404
+  if (archivos.length === 0) {
+    return res.status(404).send({
+      message: "No se encontró ningún archivo para el RUT proporcionado.",
+    });
+  }
+
+  // Ordenar los archivos por fecha de modificación (más reciente primero)
+  const archivoMasReciente = archivos
+    .map((file) => {
+      const filePath = path.join(directoryPath, file);
+      return { file, mtime: fs.statSync(filePath).mtime };
+    })
+    .sort((a, b) => b.mtime - a.mtime)[0]; // Orden descendente por fecha
+
+  // Obtener la ruta y descargar el archivo más reciente
+  const filePath = path.join(directoryPath, archivoMasReciente.file);
+
+  res.download(filePath, archivoMasReciente.file, (err) => {
+    if (err) {
+      console.error("Error al descargar el archivo:", err);
+      res.status(500).send({
+        message: "No se pudo descargar el archivo. " + err,
+      });
+    } else {
+      console.log("Archivo descargado con éxito:", archivoMasReciente.file);
     }
-  }
-
-  // Verificar si se encontró un archivo
-  if (fileName) {
-    const filePath = path.join(directoryPath, fileName);
-    res.download(filePath, fileName, (err) => {
-      if (err) {
-        console.error("Error al descargar la tesis:", err);
-        res.status(500).send({
-          message: "No se pudo descargar el archivo. " + err,
-        });
-      } else {
-        console.log("Archivo descargado con éxito:", fileName);
-      }
-    });
-  } else {
-    res.status(404).send({
-      message: "Archivo no encontrado para el RUT proporcionado.",
-    });
-  }
+  });
 };
+
 
 
 export const descargarArchivoWord = async (req, res) => {
