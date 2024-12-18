@@ -458,16 +458,16 @@ export const subirTesis = async (req, res) => {
       }
 
       // Actualizar la base de datos con la fecha de subida más reciente
-      try {
-        const connection = await createConnection();
-        await connection.query(
-          "UPDATE alumnos SET fecha_tesis = NOW() WHERE RUT = ?",
-          [alumnoRUT]
-        );
-        await connection.end();
-      } catch (e) {
-        console.error("error, de la db: ", e);
-      }
+      //try {
+      //  const connection = await createConnection();
+      //  await connection.query(
+      //    "UPDATE alumnos SET fecha_tesis = NOW() WHERE RUT = ?",
+      //    [alumnoRUT]
+      //  );
+      //  await connection.end();
+      //} catch (e) {
+      //  console.error("error, de la db: ", e);
+      //}
 
       // Notificación por correo
       const connection2 = await createConnection();
