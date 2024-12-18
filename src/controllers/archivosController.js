@@ -87,9 +87,7 @@ export const subirArchivo = async (req, res) => {
 export const descargar = async (req, res) => {
   const directoryPath = path.join(__dirname, "../public/fichas_tesis");
   const files = fs.readdirSync(directoryPath);
-  const fileName = files.find((file) =>
-    file.startsWith(`${req.params.rut}.`)
-  );
+  const fileName = files.find((file) => file.startsWith(`${req.params.rut}.`));
 
   if (fileName) {
     const filePath = path.join(directoryPath, fileName);
@@ -283,13 +281,12 @@ export const verificarArchivosAlumno = async (req, res) => {
     )
       ? 1
       : 0,
-    tesis: (fs.existsSync(path.join(__dirname, "../public/tesis", `${rut}.pdf`)) ||
-            fs.existsSync(path.join(__dirname, "../public/tesis", `${rut}.docx`)))
-      ? 1
-      : 0,
-    acta: fs.existsSync(
-      path.join(__dirname, "../public/Acta", `${rut}.docx`)
-    )
+    tesis:
+      fs.existsSync(path.join(__dirname, "../public/tesis", `${rut}.pdf`)) ||
+      fs.existsSync(path.join(__dirname, "../public/tesis", `${rut}.docx`))
+        ? 1
+        : 0,
+    acta: fs.existsSync(path.join(__dirname, "../public/Acta", `${rut}.docx`))
       ? 1
       : 0,
     guia: fs.existsSync(
@@ -306,7 +303,6 @@ export const verificarArchivosAlumno = async (req, res) => {
 
   res.json(archivos);
 };
-
 
 export const descargarRubricaInformanteConNotas = async (req, res) => {
   const rut = req.params.rut;
@@ -372,7 +368,6 @@ async function obtenerDatosParaActa(rut) {
   return results[0];
 }
 
-
 export const generarYDescargarActa = async (req, res) => {
   const rut = req.params.rut;
 
@@ -382,8 +377,11 @@ export const generarYDescargarActa = async (req, res) => {
 
     // Obtener la fecha actual
     const fechaActual = new Date();
-    const opcionesFecha = { year: 'numeric', month: 'long', day: 'numeric' };
-    const fechaFormateada = fechaActual.toLocaleDateString('es-ES', opcionesFecha);
+    const opcionesFecha = { year: "numeric", month: "long", day: "numeric" };
+    const fechaFormateada = fechaActual.toLocaleDateString(
+      "es-ES",
+      opcionesFecha
+    );
     // Cargar la plantilla de documento Word (DOCX)
     const templatePath = path.resolve(
       __dirname,
@@ -404,10 +402,10 @@ export const generarYDescargarActa = async (req, res) => {
       nota_tesis: datosActa.nota_tesis,
       nombre_profesor_guia: datosActa.nombre_profesor_guia,
       nombre_profesor_informante: datosActa.nombre_profesor_informante,
-      nombre_profesor_presidente: datosActa.nombre_profesor_presidente, 
+      nombre_profesor_presidente: datosActa.nombre_profesor_presidente,
       nombre_secretario: datosActa.nombre_secretario,
       tesis: datosActa.tesis,
-      fecha_actual: fechaFormateada
+      fecha_actual: fechaFormateada,
     });
 
     // Generar el documento DOCX
@@ -427,7 +425,6 @@ export const generarYDescargarActa = async (req, res) => {
   }
 };
 
-
 export const subirTesis = async (req, res) => {
   if (!req.files || !req.files.tesis) {
     return res.status(400).send({ message: "No se ha subido ningún archivo." });
@@ -437,28 +434,40 @@ export const subirTesis = async (req, res) => {
   const alumnoRUT = req.params.rut;
 
   // Ruta donde se almacenará el archivo
-  const uploadPath = path.join(__dirname, "../public/tesis", `${alumnoRUT}.pdf`);
+  const uploadPath = path.join(
+    __dirname,
+    "../public/tesis",
+    `${alumnoRUT}.pdf`
+  );
 
   try {
     // Verificar si ya existe un archivo para el alumno
     if (fs.existsSync(uploadPath)) {
-      console.log(`El archivo de tesis para el alumno ${alumnoRUT} será reemplazado.`);
+      console.log(
+        `El archivo de tesis para el alumno ${alumnoRUT} será reemplazado.`
+      );
     }
 
     // Mover (sobrescribir) el archivo al directorio
     tesis.mv(uploadPath, async (err) => {
       if (err) {
         console.error("Error al subir la tesis:", err);
-        return res.status(500).send({ message: "No se ha podido subir la tesis." });
+        return res
+          .status(500)
+          .send({ message: "No se ha podido subir la tesis." });
       }
 
       // Actualizar la base de datos con la fecha de subida más reciente
-      const connection = await createConnection();
-      await connection.query(
-        "UPDATE alumnos SET fecha_tesis = NOW() WHERE RUT = ?",
-        [alumnoRUT]
-      );
-      await connection.end();
+      try {
+        const connection = await createConnection();
+        await connection.query(
+          "UPDATE alumnos SET fecha_tesis = NOW() WHERE RUT = ?",
+          [alumnoRUT]
+        );
+        await connection.end();
+      } catch (e) {
+        console.error("error, de la db: ", e);
+      }
 
       // Notificación por correo
       const connection2 = await createConnection();
@@ -492,7 +501,6 @@ export const subirTesis = async (req, res) => {
     });
   }
 };
-
 
 export const descargarTesis = async (req, res) => {
   const rut = req.params.rut; // RUT del alumno
@@ -540,8 +548,6 @@ export const descargarTesis = async (req, res) => {
   });
 };
 
-
-
 export const descargarArchivoWord = async (req, res) => {
   const filePath = path.join(__dirname, "../public/ficha_alumno", "ficha.docx");
   if (fs.existsSync(filePath)) {
@@ -562,33 +568,35 @@ export const descargarArchivoWord = async (req, res) => {
 export const descargarFicha = async (req, res) => {
   const rut = req.params.rut;
   const directoryPath = path.join(__dirname, "../public/fichas_tesis");
-  
+
   // Obtener todos los archivos en el directorio
   const files = fs.readdirSync(directoryPath);
-  
+
   // Filtrar los archivos que comienzan con el RUT
   const matchingFiles = files.filter((file) => file.startsWith(`${rut}`));
-  
+
   if (matchingFiles.length === 0) {
     res.status(404).send({
       message: "Archivo no encontrado.",
     });
     return;
   }
-  
+
   // Obtener información de los archivos y ordenarlos por fecha de modificación
-  const fileInfos = matchingFiles.map((file) => {
-    const filePath = path.join(directoryPath, file);
-    const stats = fs.statSync(filePath);
-    return { file, mtime: stats.mtime };
-  }).sort((a, b) => b.mtime - a.mtime);
-  
+  const fileInfos = matchingFiles
+    .map((file) => {
+      const filePath = path.join(directoryPath, file);
+      const stats = fs.statSync(filePath);
+      return { file, mtime: stats.mtime };
+    })
+    .sort((a, b) => b.mtime - a.mtime);
+
   // Seleccionar el archivo más reciente
   const mostRecentFile = fileInfos[0].file;
   const filePath = path.join(directoryPath, mostRecentFile);
   const extension = path.extname(mostRecentFile);
   const filename = `Ficha_tesis_${rut}${extension}`;
-  
+
   // Descargar el archivo
   res.download(filePath, filename, (err) => {
     if (err) {
@@ -599,4 +607,3 @@ export const descargarFicha = async (req, res) => {
     }
   });
 };
-
