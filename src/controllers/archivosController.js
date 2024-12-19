@@ -427,126 +427,102 @@ export const generarYDescargarActa = async (req, res) => {
 
 export const subirTesis = async (req, res) => {
   if (!req.files || !req.files.tesis) {
-    return res.status(400).send({ message: "No se ha subido ningún archivo." });
+      return res.status(400).send({ message: "No se ha subido ningún archivo." });
   }
 
   const tesis = req.files.tesis;
   const alumnoRUT = req.params.rut;
 
+  // Validar que sea un archivo PDF
+  if (tesis.mimetype !== 'application/pdf') {
+      return res.status(400).send({ message: "El archivo subido no es un PDF válido." });
+  }
+
   // Ruta donde se almacenará el archivo
-  const uploadPath = path.join(
-    __dirname,
-    "../public/tesis",
-    `${alumnoRUT}.pdf`
-  );
+  const uploadPath = path.join(__dirname, "../public/tesis", `${alumnoRUT}.pdf`);
 
   try {
-    // Verificar si ya existe un archivo para el alumno
-    if (fs.existsSync(uploadPath)) {
-      console.log(
-        `El archivo de tesis para el alumno ${alumnoRUT} será reemplazado.`
-      );
-    }
-
-    // Mover (sobrescribir) el archivo al directorio
-    tesis.mv(uploadPath, async (err) => {
-      if (err) {
-        console.error("Error al subir la tesis:", err);
-        return res
-          .status(500)
-          .send({ message: "No se ha podido subir la tesis." });
+      // Verificar si ya existe un archivo para el alumno
+      if (fs.existsSync(uploadPath)) {
+          console.log(`El archivo de tesis para el alumno ${alumnoRUT} será reemplazado.`);
       }
 
-      // Actualizar la base de datos con la fecha de subida más reciente
-      //try {
-      //  const connection = await createConnection();
-      //  await connection.query(
-      //    "UPDATE alumnos SET fecha_tesis = NOW() WHERE RUT = ?",
-      //    [alumnoRUT]
-      //  );
-      //  await connection.end();
-      //} catch (e) {
-      //  console.error("error, de la db: ", e);
-      //}
+      // Mover el archivo al directorio de destino
+      tesis.mv(uploadPath, async (err) => {
+          if (err) {
+              console.error("Error al subir la tesis:", err);
+              return res.status(500).send({ message: "No se ha podido subir la tesis." });
+          }
 
-      // Notificación por correo
-      const connection2 = await createConnection();
-      const [results] = await connection2.query("SELECT mail FROM secretaria");
-      const alumno = await connection2.query(
-        "SELECT nombre FROM alumnos WHERE RUT = ?",
-        [alumnoRUT]
-      );
-      await connection2.end();
+          // Notificación por correo (si aplica)
+          try {
+              const connection = await createConnection();
+              const [results] = await connection.query("SELECT mail FROM secretaria");
+              const alumno = await connection.query(
+                  "SELECT nombre FROM alumnos WHERE RUT = ?",
+                  [alumnoRUT]
+              );
+              await connection.end();
 
-      const nombre = alumno[0][0].nombre;
-      const mailList = results.map((row) => row.mail);
+              const nombre = alumno[0][0].nombre;
+              const mailList = results.map((row) => row.mail);
 
-      await transporter.sendMail({
-        from: ' "Seminario de titulación UV" <titulacionapu@uv.cl>',
-        to: mailList.join(","),
-        subject: "Nueva tesis subida",
-        text: `Se ha subido una nueva versión de la tesis para el alumno ${nombre}.`,
-        html: `<h5>Se ha subido una nueva versión de la tesis para el alumno con RUT ${alumnoRUT}, nombre <h4>${nombre}</h4>.
-               No responder a este correo.</h5>`,
+              await transporter.sendMail({
+                  from: ' "Seminario de titulación UV" <titulacionapu@uv.cl>',
+                  to: mailList.join(","),
+                  subject: "Nueva tesis subida",
+                  text: `Se ha subido una nueva versión de la tesis para el alumno ${nombre}.`,
+                  html: `<h5>Se ha subido una nueva versión de la tesis para el alumno con RUT ${alumnoRUT}, nombre <h4>${nombre}</h4>.
+                         No responder a este correo.</h5>`,
+              });
+
+              res.send({ message: "La tesis ha sido subida correctamente." });
+          } catch (e) {
+              console.error("Error al enviar la notificación:", e);
+              res.status(500).send({
+                  message: "Archivo subido, pero no se pudo enviar la notificación.",
+              });
+          }
       });
-
-      res.send({
-        message: "La tesis ha sido subida y actualizada correctamente.",
-      });
-    });
   } catch (e) {
-    console.error("Error general al subir la tesis:", e);
-    res.status(500).send({
-      message: "No se ha podido completar la subida de la tesis.",
-    });
+      console.error("Error general al subir la tesis:", e);
+      res.status(500).send({
+          message: "No se ha podido completar la subida de la tesis.",
+      });
   }
 };
+
 
 export const descargarTesis = async (req, res) => {
   const rut = req.params.rut; // RUT del alumno
-  const directoryPath = path.join(__dirname, "../public/fichas_tesis");
+  const directoryPath = path.join(__dirname, "../public/tesis");
 
-  // Extensiones permitidas
-  const posiblesExtensiones = [".pdf", ".docx"];
+  try {
+      // Verificar si existe el archivo PDF
+      const filePath = path.join(directoryPath, `${rut}.pdf`);
+      if (!fs.existsSync(filePath)) {
+          return res.status(404).send({ message: "La tesis solicitada no existe." });
+      }
 
-  // Obtener todos los archivos que coincidan con el RUT y tengan extensiones permitidas
-  const archivos = fs
-    .readdirSync(directoryPath)
-    .filter((file) =>
-      posiblesExtensiones.some(
-        (ext) => file.startsWith(`${rut}`) && file.endsWith(ext)
-      )
-    );
+      // Verificar que el archivo no esté vacío
+      const fileStats = fs.statSync(filePath);
+      if (fileStats.size === 0) {
+          return res.status(500).send({ message: "El archivo está vacío o corrupto." });
+      }
 
-  // Si no se encuentran archivos, enviar error 404
-  if (archivos.length === 0) {
-    return res.status(404).send({
-      message: "No se encontró ningún archivo para el RUT proporcionado.",
-    });
-  }
-
-  // Ordenar los archivos por fecha de modificación (más reciente primero)
-  const archivoMasReciente = archivos
-    .map((file) => {
-      const filePath = path.join(directoryPath, file);
-      return { file, mtime: fs.statSync(filePath).mtime };
-    })
-    .sort((a, b) => b.mtime - a.mtime)[0]; // Orden descendente por fecha
-
-  // Obtener la ruta y descargar el archivo más reciente
-  const filePath = path.join(directoryPath, archivoMasReciente.file);
-
-  res.download(filePath, archivoMasReciente.file, (err) => {
-    if (err) {
-      console.error("Error al descargar el archivo:", err);
-      res.status(500).send({
-        message: "No se pudo descargar el archivo. " + err,
+      // Descargar el archivo
+      res.download(filePath, `Tesis_${rut}.pdf`, (err) => {
+          if (err) {
+              console.error("Error al descargar la tesis:", err);
+              res.status(500).send({ message: "No se pudo descargar la tesis." });
+          }
       });
-    } else {
-      console.log("Archivo descargado con éxito:", archivoMasReciente.file);
-    }
-  });
+  } catch (error) {
+      console.error("Error general al descargar la tesis:", error);
+      res.status(500).send({ message: "Ocurrió un error al procesar la descarga." });
+  }
 };
+
 
 export const descargarArchivoWord = async (req, res) => {
   const filePath = path.join(__dirname, "../public/ficha_alumno", "ficha.docx");
