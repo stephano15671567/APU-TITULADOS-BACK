@@ -6,6 +6,7 @@ import {
   upsertNota,
   deleteNota,
   upsertNotaDefensa,
+  getProfesorId
   
 } from '../controllers/notasController.js';
 
@@ -25,6 +26,8 @@ router.delete('/:nota_id', deleteNota);
 
 
 router.post('/examenoral', upsertNotaDefensa);
+
+router.get('/obtainid/:rut', getProfesorId);
 
 
 

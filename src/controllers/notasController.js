@@ -18,6 +18,26 @@ export const getAllNotas = async (req, res) => {
   }
 };
 
+export const getProfesorId = async (req, res) => {
+  const { rut } = req.params;
+  console.log(rut)
+  try {
+    const connection = await createConnection();
+    let [results] = await connection.query(
+      "SELECT * FROM asignaciones_profesores WHERE asignaciones_profesores.alumno_RUT = ? AND asignaciones_profesores.rol = 'guia'",
+      [rut]
+    );
+    if (results.length > 0) {
+      results.sort((a, b) => new Date(b.fechaAsignacion) - new Date(a.fechaAsignacion));
+      results = [results[0]];
+    }
+    await connection.end();
+    res.json(results);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+}
+
 // Obtener las notas de un alumno específico
 export const getNotasAlumno = async (req, res) => {
   const { alumno_RUT } = req.params;
