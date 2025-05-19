@@ -1,86 +1,74 @@
-import mysql2 from "mysql2/promise";
-import db from "../database/connection.js";
-import jwt from "jsonwebtoken";
+import React, { useState } from 'react';
+import { Box, Container, Paper, Typography, Button } from '@mui/material';
+import axios from 'axios';
+import DashBoard from './Dashboard/DashBoard';
 
-const createConnection = async () => {
-  return await mysql2.createConnection(db);
-};
+function SecretariaView() {
+  const [showTable, setShowTable] = useState(false);
+  const [showProfesoresTable, setShowProfesoresTable] = useState(false);
+  const [showAsignacionesTable, setShowAsignacionesTable] = useState(false);
 
-export const authSecretaria = async (req, res) => {
-  try {
-    const connection = await createConnection();
-    const { token } = req.body;
-    const token_dec = jwt.decode(token);
-    const [user] = await connection.execute(
-      "SELECT mail FROM secretaria WHERE mail = ?",
-      [token_dec.email]
-    );
-    if (user.length == 0) {
-      //Situación donde no existe alumno dentro de la bd
-      await connection.end();
-      return res
-        .status(401)
-        .json({ message: "Secretaria no perteneciente", status: false });
-    } else {
-      try {
-        //Situación donde existe alumno dentro de la bd
-        await connection.execute(
-          "UPDATE secretaria SET Gtoken = ? WHERE mail = ? ",
-          [token, token_dec.email]
-        );
-      } catch (e) {
-        console.log(e);
-        return res
-          .status(500) //Error de sv
-          .json({ message: "Secretaria no autenticado", status: false });
+  const buttonSx = {
+    mt: 2,
+    mb: 2,
+    bgcolor: 'rgba(0, 60, 88, 1)',
+    '&:hover': {
+      bgcolor: 'rgba(0, 70, 100, 1)',
+    },
+    color: 'white',
+  };
+
+  // URL para la descarga del reporte en producción
+  const reportUrl = 'https://apisst.administracionpublica-uv.cl/api/report/download-report'; 
+
+  const handleDownloadReport = async () => {
+    try {
+      // Obtener el token del almacenamiento local o donde lo guardes
+      const token = localStorage.getItem('authToken');  // Ajusta esto según tu lógica de autenticación
+
+      if (!token) {
+        alert('No estás autenticado. Inicia sesión primero.');
+        return;
       }
 
-      await connection.end(); //Situación donde existe alumno dentro de la bdssss
-      const payload = {
-        status: true,
-        rol: "secretaria",
-        email: token_dec.email,
-      };
-
-      const token_enc = jwt.sign(payload, process.env.JWT_SECRET, {
-        expiresIn: "1h",
+      // Realizamos la solicitud GET para descargar el archivo Excel
+      const response = await axios.get(reportUrl, {
+        headers: {
+          Authorization: `Bearer ${token}`,  // Enviamos el token en las cabeceras
+        },
+        responseType: 'blob',  // Especificamos que la respuesta será un archivo binario
       });
 
-      return res.status(200).json(token_enc); //GENERAR CORREO ENCRIPTADO PARA DESPUÉS
+      // Creamos una URL de descarga del archivo
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'reporte.xlsx';  // Nombre del archivo que se descargará
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);  // Eliminamos el enlace una vez descargado
+    } catch (error) {
+      console.error('Error al descargar el reporte:', error);
+      alert('Hubo un problema al descargar el reporte.');
     }
-  } catch (e) {
-    //Error de sv
-    console.log("error: ", e);
-    return res
-      .status(500)
-      .json({ message: "secretaria no autenticado", status: false });
-  }
-};
+  };
 
-export const verifyToken = async (req, res) => {
-  try {
-    if (req.headers.authorization === null) {
-      return res
-        .status(401)
-        .json({ status: false, message: "Token no válido" });
-    }
-    const token = req.headers.authorization.split(" ")[1];
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    if (decoded.rol === "secretaria") {
-      return res
-        .status(200)
-        .json({
-          status: true,
-          rol: "secretaria",
-          message: "Token verificado",
-          token: req.headers.authorization.split(" ")[1],
-        });
-    }
-    return res.status(401).json({ message: "Token vencido o inválido" });
-  } catch (e) {
-    console.log(e);
-    return res
-      .status(401)
-      .json({ status: false, message: "Token no verificado" });
-  }
-};
+  return (
+    <Container>
+      <Paper>
+        <Typography variant="h5" gutterBottom>
+          Generar Reporte de Titulados
+        </Typography>
+        <Button
+          sx={buttonSx}
+          onClick={handleDownloadReport} // Llama a la función de descarga
+        >
+          Descargar Reporte Excel
+        </Button>
+      </Paper>
+    </Container>
+  );
+}
+
+export default SecretariaView;
+

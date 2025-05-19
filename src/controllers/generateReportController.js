@@ -1,18 +1,41 @@
 import mysql from 'mysql2/promise';
 import dbConfig from '../database/connection.js';
 import ExcelJS from 'exceljs';
+import jwt from 'jsonwebtoken';
 
 // Crear conexión a la base de datos
 const createConnection = async () => {
   return await mysql.createConnection(dbConfig);
 };
 
-// Generar y enviar reporte Excel
+// Middleware para verificar token JWT (igual a tu lógica)
+export const verifyToken = async (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+      return res.status(401).json({ status: false, message: 'Token no válido' });
+    }
+
+    const token = authHeader.split(' ')[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    if (decoded.rol !== 'secretaria') {
+      return res.status(401).json({ status: false, message: 'Rol inválido' });
+    }
+
+    req.user = decoded;
+    next();
+  } catch (e) {
+    console.error('Error verificando token:', e);
+    return res.status(401).json({ status: false, message: 'Token no verificado' });
+  }
+};
+
+// Controlador para generar y enviar reporte Excel
 export const generateReport = async (req, res) => {
   try {
     const connection = await createConnection();
 
-    // Consulta con JOINs para obtener datos
     const [results] = await connection.query(`
       SELECT
         alumnos.nombre AS Alumno,
@@ -47,11 +70,9 @@ export const generateReport = async (req, res) => {
 
     await connection.end();
 
-    // Crear workbook y worksheet
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Reporte Titulados');
 
-    // Definir columnas con encabezados y anchos
     worksheet.columns = [
       { header: 'Alumno', key: 'Alumno', width: 25 },
       { header: 'RUT', key: 'RUT', width: 15 },
@@ -73,7 +94,6 @@ export const generateReport = async (req, res) => {
       { header: 'Nota Final', key: 'NotaFinal', width: 12 },
     ];
 
-    // Agregar filas con validaciones
     results.forEach(row => {
       worksheet.addRow({
         Alumno: row.Alumno || '',
@@ -101,7 +121,6 @@ export const generateReport = async (req, res) => {
       });
     });
 
-    // Opcional: aplicar estilo al encabezado
     worksheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
     worksheet.getRow(1).fill = {
       type: 'pattern',
@@ -109,15 +128,8 @@ export const generateReport = async (req, res) => {
       fgColor: { argb: 'FF4286F4' },
     };
 
-    // Enviar el archivo al cliente directamente sin crear archivo físico
-    res.setHeader(
-      'Content-Type',
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-    );
-    res.setHeader(
-      'Content-Disposition',
-      'attachment; filename="reporte.xlsx"'
-    );
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', 'attachment; filename="reporte.xlsx"');
 
     await workbook.xlsx.write(res);
     res.end();
