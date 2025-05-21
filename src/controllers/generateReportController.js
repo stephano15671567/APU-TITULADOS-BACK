@@ -1,141 +1,154 @@
 import mysql from 'mysql2/promise';
-import dbConfig from '../database/connection.js';
-import ExcelJS from 'exceljs';
-import jwt from 'jsonwebtoken';
+import dbConfig from '../database/connection.js'; 
+import writeXlsxFile from 'write-excel-file/node';
+import fs from 'fs';
+import path from 'path';
+import os from 'os';
 
-// Crear conexión a la base de datos
+// Create database connection
 const createConnection = async () => {
   return await mysql.createConnection(dbConfig);
 };
 
-// Middleware para verificar token JWT (igual a tu lógica)
-export const verifyToken = async (req, res, next) => {
-  try {
-    const authHeader = req.headers.authorization;
-    if (!authHeader) {
-      return res.status(401).json({ status: false, message: 'Token no válido' });
-    }
-
-    const token = authHeader.split(' ')[1];
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-    if (decoded.rol !== 'secretaria') {
-      return res.status(401).json({ status: false, message: 'Rol inválido' });
-    }
-
-    req.user = decoded;
-    next();
-  } catch (e) {
-    console.error('Error verificando token:', e);
-    return res.status(401).json({ status: false, message: 'Token no verificado' });
-  }
-};
-
-// Controlador para generar y enviar reporte Excel
+// Generate Excel report
 export const generateReport = async (req, res) => {
   try {
     const connection = await createConnection();
 
+    // Perform JOIN query to fetch student data with their corresponding guide and informant professors
     const [results] = await connection.query(`
       SELECT
-        alumnos.nombre AS Alumno,
-        alumnos.RUT AS RUT,
-        alumnos.CODIGO AS Codigo,
-        alumnos.ANO_INGRESO AS 'Año Ingreso',
-        alumnos.ANO_EGRESO AS 'Año Egreso',
-        alumnos.n_resolucion AS 'Número Resolución',
-        alumnos.fecha_examen AS 'Fecha Examen',
-        alumnos.hora AS Hora,
-        alumnos.mail AS Email,
-        p_guia.nombre AS 'Profesor Guía',
-        p_informante.nombre AS 'Profesor Informante',
-        p_secretario.nombre AS 'Secretario',
-        p_presidente.nombre AS 'Presidente',
-        notas.nota_guia AS 'Nota Guía',
-        notas.nota_informante AS 'Nota Informante',
-        notas.nota_tesis AS 'Promedio (Nota Tesis)',
-        notas.nota_examen_oral AS 'N.EX:ORAL',
-        notas.nota_final AS 'Nota Final'
-      FROM alumnos
-      LEFT JOIN asignaciones_profesores AS asig_guia ON alumnos.RUT = asig_guia.alumno_RUT AND asig_guia.rol = 'guia'
-      LEFT JOIN profesores AS p_guia ON asig_guia.profesor_id = p_guia.profesor_id
-      LEFT JOIN asignaciones_profesores AS asig_informante ON alumnos.RUT = asig_informante.alumno_RUT AND asig_informante.rol = 'informante'
-      LEFT JOIN profesores AS p_informante ON asig_informante.profesor_id = p_informante.profesor_id
-      LEFT JOIN asignaciones_profesores AS asig_secretario ON alumnos.RUT = asig_secretario.alumno_RUT AND asig_secretario.rol = 'secretario'
-      LEFT JOIN profesores AS p_secretario ON asig_secretario.profesor_id = p_secretario.profesor_id
-      LEFT JOIN asignaciones_profesores AS asig_presidente ON alumnos.RUT = asig_presidente.alumno_RUT AND asig_presidente.rol = 'presidente'
-      LEFT JOIN profesores AS p_presidente ON asig_presidente.profesor_id = p_presidente.profesor_id
-      LEFT JOIN notas ON alumnos.RUT = notas.alumno_RUT;
-    `);
+  alumnos.nombre AS Alumno,
+  alumnos.RUT AS RUT,
+  alumnos.CODIGO AS Codigo,
+  alumnos.ANO_INGRESO AS 'Año Ingreso',
+  alumnos.ANO_EGRESO AS 'Año Egreso',
+  alumnos.n_resolucion AS 'Número Resolución',
+  alumnos.fecha_examen AS 'Fecha Examen',
+  alumnos.hora AS Hora,
+  alumnos.mail AS Email,
+  p_guia.nombre AS 'Profesor Guía',
+  p_informante.nombre AS 'Profesor Informante',
+  p_secretario.nombre AS 'Secretario',
+  p_presidente.nombre AS 'Presidente',
+  notas.nota_guia AS 'Nota Guía',
+  notas.nota_informante AS 'Nota Informante',
+  notas.nota_tesis AS 'Promedio (Nota Tesis)',
+  notas.nota_examen_oral AS 'N.EX:ORAL',
+  notas.nota_final AS 'Nota Final'
+FROM alumnos
+LEFT JOIN asignaciones_profesores AS asig_guia ON alumnos.RUT = asig_guia.alumno_RUT AND asig_guia.rol = 'guia'
+LEFT JOIN profesores AS p_guia ON asig_guia.profesor_id = p_guia.profesor_id
+LEFT JOIN asignaciones_profesores AS asig_informante ON alumnos.RUT = asig_informante.alumno_RUT AND asig_informante.rol = 'informante'
+LEFT JOIN profesores AS p_informante ON asig_informante.profesor_id = p_informante.profesor_id
+LEFT JOIN asignaciones_profesores AS asig_secretario ON alumnos.RUT = asig_secretario.alumno_RUT AND asig_secretario.rol = 'secretario'
+LEFT JOIN profesores AS p_secretario ON asig_secretario.profesor_id = p_secretario.profesor_id
+LEFT JOIN asignaciones_profesores AS asig_presidente ON alumnos.RUT = asig_presidente.alumno_RUT AND asig_presidente.rol = 'presidente'
+LEFT JOIN profesores AS p_presidente ON asig_presidente.profesor_id = p_presidente.profesor_id
+LEFT JOIN notas ON alumnos.RUT = notas.alumno_RUT;
+          `);
 
+    // Close the database connection
     await connection.end();
 
-    const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet('Reporte Titulados');
-
-    worksheet.columns = [
-      { header: 'Alumno', key: 'Alumno', width: 25 },
-      { header: 'RUT', key: 'RUT', width: 15 },
-      { header: 'Codigo', key: 'Codigo', width: 15 },
-      { header: 'Año Ingreso', key: 'AñoIngreso', width: 12 },
-      { header: 'Año Egreso', key: 'AñoEgreso', width: 12 },
-      { header: 'Número Resolución', key: 'NumeroResolucion', width: 18 },
-      { header: 'Fecha Examen', key: 'FechaExamen', width: 15 },
-      { header: 'Hora', key: 'Hora', width: 10 },
-      { header: 'Email', key: 'Email', width: 30 },
-      { header: 'Profesor Guía', key: 'ProfesorGuia', width: 25 },
-      { header: 'Profesor Informante', key: 'ProfesorInformante', width: 25 },
-      { header: 'Secretario', key: 'Secretario', width: 25 },
-      { header: 'Presidente', key: 'Presidente', width: 25 },
-      { header: 'Promedio (Nota Tesis)', key: 'NotaTesis', width: 18 },
-      { header: 'Nota Guía', key: 'NotaGuia', width: 12 },
-      { header: 'Nota Informante', key: 'NotaInformante', width: 15 },
-      { header: 'N.EX:ORAL', key: 'NotaExamenOral', width: 12 },
-      { header: 'Nota Final', key: 'NotaFinal', width: 12 },
+    // Define the data for the Excel file
+    const data = [
+      // Headers for the report
+      [
+        { value: 'Alumno', fontWeight: 'bold', fontColor: 'FFFFFF', fill: '4286f4' },
+        { value: 'RUT', fontWeight: 'bold', fontColor: 'FFFFFF', fill: '4286f4' },
+        { value: 'Codigo', fontWeight: 'bold', fontColor: 'FFFFFF', fill: '4286f4' },
+        { value: 'Año Ingreso', fontWeight: 'bold', fontColor: 'FFFFFF', fill: '4286f4' },
+        { value: 'Año Egreso', fontWeight: 'bold', fontColor: 'FFFFFF', fill: '4286f4' },
+        { value: 'Número Resolución', fontWeight: 'bold', fontColor: 'FFFFFF', fill: '4286f4' },
+        { value: 'Fecha Examen', fontWeight: 'bold', fontColor: 'FFFFFF', fill: '4286f4' },
+        { value: 'Hora', fontWeight: 'bold', fontColor: 'FFFFFF', fill: '4286f4' },
+        { value: 'Email', fontWeight: 'bold', fontColor: 'FFFFFF', fill: '4286f4' },
+        { value: 'Profesor Guía', fontWeight: 'bold', fontColor: 'FFFFFF', fill: '4286f4' },
+        { value: 'Profesor Informante', fontWeight: 'bold', fontColor: 'FFFFFF', fill: '4286f4' },
+        { value: 'Secretario', fontWeight: 'bold', fontColor: 'FFFFFF', fill: '4286f4' },
+        { value: 'Presidente', fontWeight: 'bold', fontColor: 'FFFFFF', fill: '4286f4' },
+        { value: 'Tesis', fontWeight: 'bold', fontColor: 'FFFFFF', fill: '4286f4' },
+        { value: 'Nota Guía', fontWeight: 'bold', fontColor: 'FFFFFF', fill: '4286f4' },
+        { value: 'Nota Informante', fontWeight: 'bold', fontColor: 'FFFFFF', fill: '4286f4' },
+        { value: 'Promedio (Nota Tesis)', fontWeight: 'bold', fontColor: 'FFFFFF', fill: '4286f4' },
+        { value: 'N.EX:ORAL', fontWeight: 'bold', fontColor: 'FFFFFF', fill: '4286f4' },
+        { value: 'Nota Final', fontWeight: 'bold', fontColor: 'FFFFFF', fill: '4286f4' }
+      ],
+      // Student data with their guide and informant professors
+      ...results.map(row => [
+        { value: row.Alumno },
+        { value: row.RUT },
+        { value: row.Codigo },
+        { value: row['Año Ingreso'] },
+        { value: row['Año Egreso'] },
+        { value: row['Número Resolución'] },
+        { value: row['Fecha Examen'] instanceof Date ? row['Fecha Examen'].toLocaleDateString() : row['Fecha Examen'] },
+        { value: row.Hora ? row.Hora.toString() : '' },
+        { value: row.Email },
+        { value: row['Profesor Guía'] },
+        { value: row['Profesor Informante'] },
+        { value: row.Secretario },
+        { value: row.Presidente },
+        { value: row.Tesis },
+        { value: row['Nota Guía'] },
+        { value: row['Nota Informante'] },
+        { value: row['Promedio (Nota Tesis)'] },
+        { value: row['N.EX:ORAL'] },
+        { value: row['Nota Final'] }
+      ])
     ];
 
-    results.forEach(row => {
-      worksheet.addRow({
-        Alumno: row.Alumno || '',
-        RUT: row.RUT || '',
-        Codigo: row.Codigo || '',
-        AñoIngreso: row['Año Ingreso'] || '',
-        AñoEgreso: row['Año Egreso'] || '',
-        NumeroResolucion: row['Número Resolución'] || '',
-        FechaExamen: row['Fecha Examen']
-          ? (row['Fecha Examen'] instanceof Date
-            ? row['Fecha Examen'].toLocaleDateString()
-            : row['Fecha Examen'])
-          : '',
-        Hora: row.Hora ? row.Hora.toString() : '',
-        Email: row.Email || '',
-        ProfesorGuia: row['Profesor Guía'] || '',
-        ProfesorInformante: row['Profesor Informante'] || '',
-        Secretario: row.Secretario || '',
-        Presidente: row.Presidente || '',
-        NotaTesis: row['Promedio (Nota Tesis)'] || '',
-        NotaGuia: row['Nota Guía'] || '',
-        NotaInformante: row['Nota Informante'] || '',
-        NotaExamenOral: row['N.EX:ORAL'] || '',
-        NotaFinal: row['Nota Final'] || '',
+    // Generate a temporary file path
+    const tempFilePath = path.join(os.tmpdir(), 'reporte.xlsx');
+
+    // Create the Excel file on the server
+    await writeXlsxFile(data, {
+      filePath: tempFilePath,
+      columns: [
+        { width: 15 }, // Alumno
+        { width: 15 }, // RUT
+        { width: 15 }, // Codigo
+        { width: 15 }, // Año Ingreso
+        { width: 15 }, // Año Egreso
+        { width: 15 }, // Número Resolución
+        { width: 15 }, // Fecha Examen
+        { width: 15 }, // Hora
+        { width: 35 }, // Email
+        { width: 25 }, // Profesor Guía
+        { width: 25 }, // Profesor Informante
+        { width: 25 }, // Secretario
+        { width: 25 },  // Presidente
+        { width: 20 }, // Tesis
+        { width: 15 }, // Nota Guía
+        { width: 15 }, // Nota Informante
+        { width: 20 }, // Promedio (Nota Tesis)
+        { width: 15 }, // N.EX:ORAL
+        { width: 15 }  // Nota Final
+      ],
+      rows: [{ height: 30 }, ...Array(data.length - 1).fill({ height: 25 })], // Set row height
+      border: 'thin' // Set border thickness
+    });
+
+    // Send the file to the client
+    res.download(tempFilePath, 'reporte.xlsx', (error) => {
+      if (error) {
+        console.error('Error when sending the file:', error);
+        return res.status(500).json({ message: 'Error when sending the file' });
+      }
+
+      // Attempt to delete the temporary file after the response has been sent
+      res.on('finish', () => {
+        try {
+          fs.unlinkSync(tempFilePath);
+        } catch (err) {
+          console.error('Error when deleting the temporary file:', err);
+        }
       });
     });
 
-    worksheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
-    worksheet.getRow(1).fill = {
-      type: 'pattern',
-      pattern: 'solid',
-      fgColor: { argb: 'FF4286F4' },
-    };
-
-    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    res.setHeader('Content-Disposition', 'attachment; filename="reporte.xlsx"');
-
-    await workbook.xlsx.write(res);
-    res.end();
-
   } catch (error) {
-    console.error('Error generando reporte:', error);
-    res.status(500).json({ message: 'Error generando reporte' });
+    console.error('Error when generating the report:', error);
+    res.status(500).json({ message: 'Error when generating the report' });
   }
 };

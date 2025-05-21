@@ -10,4 +10,3 @@ const router = express.Router();
 router.get('/download-report', generateReport);
 
 export default router;
-
