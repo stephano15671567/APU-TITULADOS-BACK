@@ -3,6 +3,7 @@ import cors from 'cors';
 import morgan from 'morgan';
 import session from 'express-session';
 import fileUpload from 'express-fileupload';
+
 import uploadRoutes from './routes/uploadRoutes.js';
 import profesoresRoutes from './routes/profesoresRoutes.js';
 import alumnosRoutes from './routes/alumnosRoutes.js';
@@ -13,37 +14,40 @@ import archivosRoutes from './routes/archivosRoutes.js';
 import correosRoutes from './routes/correosRoutes.js';
 import stateRoutes from './routes/statesRoutes.js';
 import reportRoutes from './routes/reportRoutes.js';
+
 import value from './const/const.js';
 
 const app = express();
 
 const corsOptions = {
-  credentials: true,
-  optionSuccessStatus: 200,
-  methods: "GET, PUT, POST, DELETE, PATCH",
   origin: [
     "https://titulados.administracionpublica-uv.cl",
-    "http://localhost:3000",
+    "http://localhost:3000"
   ],
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
 };
 
-app.set("env", value.NODE_ENV);
-app.set("port", value.RUN_PORT);
+app.use(cors(corsOptions));
+app.use(morgan('dev'));
+app.use(express.json({ limit: '500MB' }));
+app.use(express.urlencoded({ extended: true }));
+
+app.use(session({
+  secret: value.SECRET,
+  resave: false,
+  saveUninitialized: false,
+}));
+
 app.use(fileUpload({
   createParentPath: true,
   limits: { fileSize: 500 * 1024 * 1024 },
   abortOnLimit: true,
-  responseOnLimit: "El archivo es demasiado grande",
+  responseOnLimit: "El archivo es demasiado grande"
 }));
-app.use(morgan("dev"));
-app.use(cors(corsOptions));
-app.use(express.json({ limit: "500MB" }));
-app.use(express.urlencoded({ extended: true }));
-app.use(session({
-    secret: value.SECRET,
-    resave: false,
-    saveUninitialized: false,
-}));
+
+// Rutas
 app.use('/api/report', reportRoutes);
 app.use('/api/notas', notasRoutes);
 app.use('/upload', uploadRoutes);

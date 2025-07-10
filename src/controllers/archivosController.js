@@ -14,12 +14,12 @@ const createConnection = async () => {
   return await mysql2.createConnection(db);
 };
 
-const user = "titulacionapu@uv.cl";
-const pass = "Escapu2024";
+const user = "MS_Vm2qEO@administracionpublica-uv.cl";
+const pass = "mssp.1UcpaaQ.k68zxl23qmmgj905.xsrMkRj";
 
 const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 465,
+  host: "smtp.mailersend.net",
+  port: 587,
   secure: true,
   auth: {
     user: `${user}`,
