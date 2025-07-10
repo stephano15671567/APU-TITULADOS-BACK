@@ -20,7 +20,7 @@ const pass = "mssp.1UcpaaQ.k68zxl23qmmgj905.xsrMkRj";
 const transporter = nodemailer.createTransport({
   host: "smtp.mailersend.net",
   port: 587,
-  secure: true,
+  secure: false,
   auth: {
     user: `${user}`,
     pass: `${pass}`,
@@ -53,11 +53,11 @@ export const subirArchivo = async (req, res) => {
         const connection = await createConnection();
         const [results] = await connection.query("SELECT mail FROM secretaria");
         await connection.end();
-
+        let toEmail = results[0].mail;
         const mailList = results.map((row) => row.mail);
 
         const data = await transporter.sendMail({
-          from: '"Sistema de seminario de titulación UV" <no-reply@uv.cl>',
+          from: '"Sistema de seminario de titulación UV" <MS_Vm2qEO@administracionpublica-uv.cl>',
           to: mailList.join(","),
           subject: "Nueva ficha de inscripción subida",
           text: `Se ha subido una nueva ficha de inscripción para el alumno con RUT ${name}.`,
@@ -170,7 +170,7 @@ export const subirRubricaInformante = async (req, res) => {
     const mailList = results.map((row) => row.mail);
 
     const data = await transporter.sendMail({
-      from: ' "Sistema de seminario de titulación UV" <titulacionapu@uv.cl>',
+      from: ' "Sistema de seminario de titulación UV" <MS_Vm2qEO@administracionpublica-uv.cl>',
       to: mailList.join(","),
       subject: "Nueva rúbrica de informante subida",
       text: `Se ha subido una rúbrica de informante para el alumno: ${nombre}`,
@@ -222,7 +222,7 @@ export const subirRubricaGuia = async (req, res) => {
     const mailList = results.map((row) => row.mail);
 
     const data = await transporter.sendMail({
-      from: ' "Sistema de seminario de titulación UV" <titulacionapu@uv.cl>',
+      from: ' "Sistema de seminario de titulación UV" <MS_Vm2qEO@administracionpublica-uv.cl>',
       to: mailList.join(","),
       subject: "Nueva rúbrica de guía subida",
       text: `Se ha subido una rúbrica de guía para el alumno: ${nombre}`,
@@ -468,7 +468,7 @@ export const subirTesis = async (req, res) => {
               const mailList = results.map((row) => row.mail);
 
               await transporter.sendMail({
-                  from: ' "Seminario de titulación UV" <titulacionapu@uv.cl>',
+                  from: ' "Seminario de titulación UV" <MS_Vm2qEO@administracionpublica-uv.cl>',
                   to: mailList.join(","),
                   subject: "Nueva tesis subida",
                   text: `Se ha subido una nueva versión de la tesis para el alumno ${nombre}.`,

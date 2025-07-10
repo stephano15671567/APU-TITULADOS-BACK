@@ -7,7 +7,7 @@ import nodemailer from "nodemailer";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const correo_SST = "titulacionapu@uv.cl";
+const correo_SST = "MS_Vm2qEO@administracionpublica-uv.cl";
 
 const createConnection = async () => {
   return await mysql2.createConnection(db);
@@ -19,7 +19,7 @@ const pass = "mssp.1UcpaaQ.k68zxl23qmmgj905.xsrMkRj";
 const transporter = nodemailer.createTransport({
   host: "smtp.mailersend.net",
   port: 587,
-  secure: true,
+  secure: false,
   auth: {
     user: `${user}`,
     pass: `${pass}`,
@@ -31,7 +31,7 @@ export const mail = async (req, res) => {
   console.log(rut);
   try {
     const info = await transporter.sendMail({
-      from: ' "Sistema de seminario de titulación UV" <titulacionapu@uv.cl>',
+      from: ' "Sistema de seminario de titulación UV" <MS_Vm2qEO@administracionpublica-uv.cl>',
       to: `${correo_SST}`,
       subject: "Testing",
       text: "Testing",
@@ -65,6 +65,7 @@ export const notification = async (req, res) => {
     );
     const [resultsmail] = await connection.query("SELECT mail FROM secretaria");
     const mailList = resultsmail.map((row) => row.mail);
+    
 
     await connection.end();
     console.log(results);
@@ -83,10 +84,14 @@ export const notification = async (req, res) => {
         });
       }
 
+      // Remove duplicate emails between 'to' and 'cc'
+      let toEmail = results[0].mail;
+      let ccList = mailList.filter(mail => mail !== toEmail);
+
       const info = await transporter.sendMail({
         from: ` "Sistema de seminario de titulación UV" <${correo_SST}>`,
-        to: `${results[0].mail}`,
-        cc:  mailList.join(","),
+        to: toEmail,
+        cc: ccList.join(","),
         subject: "Asignación",
         text: `Asignación con rol de ${results[0].rol}`,
         html: `<h5>
