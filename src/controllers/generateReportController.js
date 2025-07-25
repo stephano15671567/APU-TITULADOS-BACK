@@ -38,105 +38,89 @@ export const generateReport = async (req, res) => {
 
     const [results] = await connection.query(`
       SELECT
-        alumnos.nombre AS Alumno,
-        alumnos.RUT AS RUT,
-        alumnos.CODIGO AS Codigo,
-        alumnos.ANO_INGRESO AS 'Año Ingreso',
-        alumnos.ANO_EGRESO AS 'Año Egreso',
-        alumnos.n_resolucion AS 'Número Resolución',
-        alumnos.fecha_examen AS 'Fecha Examen',
-        alumnos.hora AS Hora,
-        alumnos.mail AS Email,
-        p_guia.nombre AS 'Profesor Guía',
-        p_informante.nombre AS 'Profesor Informante',
-        p_secretario.nombre AS 'Secretario',
-        p_presidente.nombre AS 'Presidente',
-        notas.nota_guia AS 'Nota Guía',
-        notas.nota_informante AS 'Nota Informante',
-        notas.nota_tesis AS 'Promedio (Nota Tesis)',
-        notas.nota_examen_oral AS 'N.EX:ORAL',
-        notas.nota_final AS 'Nota Final'
-      FROM alumnos
-      LEFT JOIN asignaciones_profesores AS asig_guia ON alumnos.RUT = asig_guia.alumno_RUT AND asig_guia.rol = 'guia'
-      LEFT JOIN profesores AS p_guia ON asig_guia.profesor_id = p_guia.profesor_id
-      LEFT JOIN asignaciones_profesores AS asig_informante ON alumnos.RUT = asig_informante.alumno_RUT AND asig_informante.rol = 'informante'
-      LEFT JOIN profesores AS p_informante ON asig_informante.profesor_id = p_informante.profesor_id
-      LEFT JOIN asignaciones_profesores AS asig_secretario ON alumnos.RUT = asig_secretario.alumno_RUT AND asig_secretario.rol = 'secretario'
-      LEFT JOIN profesores AS p_secretario ON asig_secretario.profesor_id = p_secretario.profesor_id
-      LEFT JOIN asignaciones_profesores AS asig_presidente ON alumnos.RUT = asig_presidente.alumno_RUT AND asig_presidente.rol = 'presidente'
-      LEFT JOIN profesores AS p_presidente ON asig_presidente.profesor_id = p_presidente.profesor_id
-      LEFT JOIN notas ON alumnos.RUT = notas.alumno_RUT;
+        a.nombre AS Alumno,
+        a.RUT AS RUT,
+        a.CODIGO AS Codigo,
+        a.ANO_INGRESO AS 'Año Ingreso',
+        a.ANO_EGRESO AS 'Año Egreso',
+        a.n_resolucion AS 'Número Resolución',
+        a.fecha_examen AS 'Fecha Examen',
+        a.hora AS Hora,
+        a.mail AS Email,
+        MAX(CASE WHEN ap.rol = 'guia' THEN p.nombre END) AS 'Profesor Guía',
+        MAX(CASE WHEN ap.rol = 'informante' THEN p.nombre END) AS 'Profesor Informante',
+        MAX(CASE WHEN ap.rol = 'secretario' THEN p.nombre END) AS 'Secretario',
+        MAX(CASE WHEN ap.rol = 'presidente' THEN p.nombre END) AS 'Presidente',
+        MAX(n.nota_guia) AS 'Nota Guía',
+        MAX(n.nota_informante) AS 'Nota Informante',
+        MAX(n.nota_tesis) AS 'Promedio (Nota Tesis)',
+        MAX(n.nota_examen_oral) AS 'N.EX:ORAL',
+        MAX(n.nota_final) AS 'Nota Final'
+      FROM alumnos AS a
+      LEFT JOIN asignaciones_profesores AS ap ON a.RUT = ap.alumno_RUT
+      LEFT JOIN profesores AS p ON ap.profesor_id = p.profesor_id
+      LEFT JOIN notas AS n ON a.RUT = n.alumno_RUT
+      GROUP BY a.RUT;
     `);
 
     await connection.end();
 
     const data = [
       [
-        { value: 'Alumno', fontWeight: 'bold', fontColor: 'FFFFFF', fill: '4286f4' },
-        { value: 'RUT', fontWeight: 'bold', fontColor: 'FFFFFF', fill: '4286f4' },
-        { value: 'Codigo', fontWeight: 'bold', fontColor: 'FFFFFF', fill: '4286f4' },
-        { value: 'Año Ingreso', fontWeight: 'bold', fontColor: 'FFFFFF', fill: '4286f4' },
-        { value: 'Año Egreso', fontWeight: 'bold', fontColor: 'FFFFFF', fill: '4286f4' },
-        { value: 'Número Resolución', fontWeight: 'bold', fontColor: 'FFFFFF', fill: '4286f4' },
-        { value: 'Fecha Examen', fontWeight: 'bold', fontColor: 'FFFFFF', fill: '4286f4' },
-        { value: 'Hora', fontWeight: 'bold', fontColor: 'FFFFFF', fill: '4286f4' },
-        { value: 'Email', fontWeight: 'bold', fontColor: 'FFFFFF', fill: '4286f4' },
-        { value: 'Profesor Guía', fontWeight: 'bold', fontColor: 'FFFFFF', fill: '4286f4' },
-        { value: 'Profesor Informante', fontWeight: 'bold', fontColor: 'FFFFFF', fill: '4286f4' },
-        { value: 'Secretario', fontWeight: 'bold', fontColor: 'FFFFFF', fill: '4286f4' },
-        { value: 'Presidente', fontWeight: 'bold', fontColor: 'FFFFFF', fill: '4286f4' },
-        { value: 'Nota Guía', fontWeight: 'bold', fontColor: 'FFFFFF', fill: '4286f4' },
-        { value: 'Nota Informante', fontWeight: 'bold', fontColor: 'FFFFFF', fill: '4286f4' },
-        { value: 'Promedio (Nota Tesis)', fontWeight: 'bold', fontColor: 'FFFFFF', fill: '4286f4' },
-        { value: 'N.EX:ORAL', fontWeight: 'bold', fontColor: 'FFFFFF', fill: '4286f4' },
-        { value: 'Nota Final', fontWeight: 'bold', fontColor: 'FFFFFF', fill: '4286f4' }
+        { value: 'Alumno', fontWeight: 'bold', color: '#FFFFFF', backgroundColor: '#4286f4' },
+        { value: 'RUT', fontWeight: 'bold', color: '#FFFFFF', backgroundColor: '#4286f4' },
+        { value: 'Codigo', fontWeight: 'bold', color: '#FFFFFF', backgroundColor: '#4286f4' },
+        { value: 'Año Ingreso', fontWeight: 'bold', color: '#FFFFFF', backgroundColor: '#4286f4' },
+        { value: 'Año Egreso', fontWeight: 'bold', color: '#FFFFFF', backgroundColor: '#4286f4' },
+        { value: 'Número Resolución', fontWeight: 'bold', color: '#FFFFFF', backgroundColor: '#4286f4' },
+        { value: 'Fecha Examen', fontWeight: 'bold', color: '#FFFFFF', backgroundColor: '#4286f4' },
+        { value: 'Hora', fontWeight: 'bold', color: '#FFFFFF', backgroundColor: '#4286f4' },
+        { value: 'Email', fontWeight: 'bold', color: '#FFFFFF', backgroundColor: '#4286f4' },
+        { value: 'Profesor Guía', fontWeight: 'bold', color: '#FFFFFF', backgroundColor: '#4286f4' },
+        { value: 'Profesor Informante', fontWeight: 'bold', color: '#FFFFFF', backgroundColor: '#4286f4' },
+        { value: 'Secretario', fontWeight: 'bold', color: '#FFFFFF', backgroundColor: '#4286f4' },
+        { value: 'Presidente', fontWeight: 'bold', color: '#FFFFFF', backgroundColor: '#4286f4' },
+        { value: 'Nota Guía', fontWeight: 'bold', color: '#FFFFFF', backgroundColor: '#4286f4' },
+        { value: 'Nota Informante', fontWeight: 'bold', color: '#FFFFFF', backgroundColor: '#4286f4' },
+        { value: 'Promedio (Nota Tesis)', fontWeight: 'bold', color: '#FFFFFF', backgroundColor: '#4286f4' },
+        { value: 'N.EX:ORAL', fontWeight: 'bold', color: '#FFFFFF', backgroundColor: '#4286f4' },
+        { value: 'Nota Final', fontWeight: 'bold', color: '#FFFFFF', backgroundColor: '#4286f4' }
       ],
       ...results.map(row => [
-        { value: row.Alumno },
-        { value: row.RUT },
-        { value: row.Codigo },
-        { value: row['Año Ingreso'] },
-        { value: row['Año Egreso'] },
-        { value: row['Número Resolución'] },
-        { value: row['Fecha Examen'] instanceof Date ? row['Fecha Examen'].toLocaleDateString() : row['Fecha Examen'] },
-        { value: row.Hora ? row.Hora.toString() : '' },
-        { value: row.Email },
-        { value: row['Profesor Guía'] },
-        { value: row['Profesor Informante'] },
-        { value: row.Secretario },
-        { value: row.Presidente },
-        { value: row['Nota Guía'] },
-        { value: row['Nota Informante'] },
-        { value: row['Promedio (Nota Tesis)'] },
-        { value: row['N.EX:ORAL'] },
-        { value: row['Nota Final'] }
+        { type: String, value: row.Alumno },
+        { type: String, value: row.RUT },
+        { type: String, value: row.Codigo },
+        { type: Number, value: row['Año Ingreso'] ? parseFloat(row['Año Ingreso']) : null },
+        { type: Number, value: row['Año Egreso'] ? parseFloat(row['Año Egreso']) : null },
+        { type: String, value: row['Número Resolución'] },
+        // --- CORRECCIÓN FINAL: Se convierte la cadena de texto a un objeto Date ---
+        { type: Date, value: row['Fecha Examen'] ? new Date(row['Fecha Examen']) : null, format: 'dd/mm/yyyy' },
+        { type: String, value: row.Hora ? row.Hora.toString() : '' },
+        { type: String, value: row.Email },
+        { type: String, value: row['Profesor Guía'] },
+        { type: String, value: row['Profesor Informante'] },
+        { type: String, value: row.Secretario },
+        { type: String, value: row.Presidente },
+        { type: Number, value: row['Nota Guía'] ? parseFloat(row['Nota Guía']) : null },
+        { type: Number, value: row['Nota Informante'] ? parseFloat(row['Nota Informante']) : null },
+        { type: Number, value: row['Promedio (Nota Tesis)'] ? parseFloat(row['Promedio (Nota Tesis)']) : null },
+        { type: Number, value: row['N.EX:ORAL'] ? parseFloat(row['N.EX:ORAL']) : null },
+        { type: Number, value: row['Nota Final'] ? parseFloat(row['Nota Final']) : null }
       ])
     ];
 
-    const tempFilePath = path.join(os.tmpdir(), 'reporte.xlsx');
+    const tempFilePath = path.join(os.tmpdir(), `reporte_${Date.now()}.xlsx`);
 
     await writeXlsxFile(data, {
-      filePath: tempFilePath,
-      columns: [
-        { width: 15 }, { width: 15 }, { width: 15 }, { width: 15 }, { width: 15 },
-        { width: 15 }, { width: 15 }, { width: 15 }, { width: 35 }, { width: 25 },
-        { width: 25 }, { width: 25 }, { width: 25 }, { width: 15 }, { width: 15 },
-        { width: 20 }, { width: 15 }, { width: 15 }
-      ],
-      rows: [{ height: 30 }, ...Array(data.length - 1).fill({ height: 25 })],
-      border: 'thin'
+      filePath: tempFilePath
     });
 
     res.download(tempFilePath, 'reporte.xlsx', (error) => {
       if (error) {
         console.error('Error al enviar el archivo:', error);
-        return res.status(500).json({ message: 'Error al enviar el archivo' });
       }
-
-      res.on('finish', () => {
-        try {
-          fs.unlinkSync(tempFilePath);
-        } catch (err) {
+      fs.unlink(tempFilePath, (err) => {
+        if (err) {
           console.error('Error al eliminar el archivo temporal:', err);
         }
       });
